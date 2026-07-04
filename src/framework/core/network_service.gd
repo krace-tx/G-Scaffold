@@ -158,7 +158,7 @@ func _acquire_request() -> HTTPRequest:
 	if not _free_pool.is_empty():
 		return _free_pool.pop_back()
 	var hr := HTTPRequest.new()
-	add_child(hr)
+	NodeUtils.mount_required(hr, self, "HTTPRequest_%d" % get_child_count())
 	return hr
 
 

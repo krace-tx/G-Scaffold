@@ -72,7 +72,8 @@ func open(ui_id: StringName, params: Dictionary = {}) -> BaseUI:
 		App.log.error("ui", "failed to load ui: %s" % entry.scene_path)
 		return null
 
-	_layers[entry.layer].add_child(ui)
+	# 挂到对应层,并以 ui_id 命名(调试树可读、也便于按名查找)。
+	NodeUtils.mount_required(ui, _layers[entry.layer], String(ui_id))
 	(_stacks[entry.layer] as Array).append(ui)
 	_open[ui_id] = ui
 	ui._on_open(params)
@@ -145,7 +146,8 @@ func _build_layers() -> void:
 	for layer: UIRegistryEntry.Layer in _LAYER_ORDER:
 		var canvas := CanvasLayer.new()
 		canvas.layer = _LAYER_ORDER[layer]
-		add_child(canvas)
+		# 按枚举名命名(UILayer_POPUP 等),调试场景树一眼可读。
+		NodeUtils.mount_required(canvas, self, "UILayer_%s" % UIRegistryEntry.Layer.keys()[layer])
 		_layers[layer] = canvas
 		_stacks[layer] = []
 #endregion

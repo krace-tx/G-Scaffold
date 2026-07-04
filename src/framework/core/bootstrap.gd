@@ -112,12 +112,10 @@ func _phase_6_enter_main_menu() -> void:
 
 
 ## 把一个常驻服务节点挂到 App 下,并按 [param node_name] 命名(让调试场景树可读:
-## App/SceneService 而不是 App/@Node@2)。经 NodeUtils.mount 走统一守卫。
-## 启动期这里结构上不该失败;真失败了即接线 bug,push_error 大声报出、绝不吞。
+## App/SceneService 而不是 App/@Node@2)。走 NodeUtils.mount_required——统一守卫,
+## 失败即接线 bug 由其 push_error 大声报出,不在此重复处理。
 func _mount_service(node: Node, node_name: String) -> void:
-	var res := NodeUtils.mount(node, App, node_name)
-	if res.is_err():
-		push_error("boot: mount %s failed — %s" % [node_name, res.error])
+	NodeUtils.mount_required(node, App, node_name)
 
 
 ## 框架自带的演示用 Mock 应答表(path → 响应体),仅用于让 Bootstrap 在没有真实

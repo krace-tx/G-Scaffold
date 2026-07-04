@@ -41,13 +41,13 @@ func _ready() -> void:
 	for i in 2:
 		var p := AudioStreamPlayer.new()
 		p.bus = _BUS_BGM
-		add_child(p)
+		NodeUtils.mount_required(p, self, "BGMPlayer_%d" % i)
 		_bgm_players.append(p)
 
 	for i in _SFX_POOL_SIZE:
 		var p := AudioStreamPlayer.new()
 		p.bus = _BUS_SFX
-		add_child(p)
+		NodeUtils.mount_required(p, self, "SFXPlayer_%d" % i)
 		_sfx_pool.append(p)
 #endregion
 

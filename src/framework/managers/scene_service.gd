@@ -180,8 +180,8 @@ func _build_overlay() -> void:
 	# 默认吃掉点击——否则透明状态下它也会静默挡住底下 UI,造成"点不动"的诡异 bug。
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.modulate.a = 0.0
-	layer.add_child(_overlay)
-	add_child(layer)
+	NodeUtils.mount_required(_overlay, layer, "FadeOverlay")
+	NodeUtils.mount_required(layer, self, "TransitionLayer")
 
 
 func _fade_out() -> void:

@@ -19,6 +19,7 @@ var _sync_tick_msec: int = 0     ## 校时那一刻的本地 Time.get_ticks_msec
 #region Public API
 ## 当前 unix 时间(秒)。已校时→服务器时间+本地tick推进;未校时→系统时钟(不可信)。
 func now() -> int:
+	@warning_ignore("integer_division")   # 有意:毫秒→秒取整
 	return now_msec() / 1000
 
 

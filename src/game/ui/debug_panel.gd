@@ -63,34 +63,34 @@ func _build_ui() -> void:
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	panel.position = Vector2(12, 12)
-	add_child(panel)
+	NodeUtils.mount_required(panel, self, "Panel")
 
 	var vbox := VBoxContainer.new()
-	panel.add_child(vbox)
+	NodeUtils.mount_required(vbox, panel, "VBox")
 
 	var title := Label.new()
 	title.text = "— DEBUG PANEL —"
-	vbox.add_child(title)
+	NodeUtils.mount_required(title, vbox, "Title")
 
 	_stats_label = Label.new()
-	vbox.add_child(_stats_label)
+	NodeUtils.mount_required(_stats_label, vbox, "StatsLabel")
 
-	vbox.add_child(_button("→ Main Menu", func() -> void: App.scenes.replace(SceneIds.MAIN_MENU)))
-	vbox.add_child(_button("→ Level", func() -> void: App.scenes.replace(SceneIds.LEVEL)))
-	vbox.add_child(_button("Clear Save", func() -> void: _clear_save()))
-	vbox.add_child(_button("Dump Save → log", func() -> void: App.log.info("debug", App.save.to_json())))
-	vbox.add_child(_button("Dump Logs → stdout", func() -> void: print(App.log.dump())))
-	vbox.add_child(_button("Close", func() -> void: App.ui.close(UIIds.DEBUG)))
+	_add_button(vbox, "MainMenuButton", "→ Main Menu", func() -> void: App.scenes.replace(SceneIds.MAIN_MENU))
+	_add_button(vbox, "LevelButton", "→ Level", func() -> void: App.scenes.replace(SceneIds.LEVEL))
+	_add_button(vbox, "ClearSaveButton", "Clear Save", func() -> void: _clear_save())
+	_add_button(vbox, "DumpSaveButton", "Dump Save → log", func() -> void: App.log.info("debug", App.save.to_json()))
+	_add_button(vbox, "DumpLogsButton", "Dump Logs → stdout", func() -> void: print(App.log.dump()))
+	_add_button(vbox, "CloseButton", "Close", func() -> void: App.ui.close(UIIds.DEBUG))
 
 	_monitor_label = Label.new()
-	vbox.add_child(_monitor_label)
+	NodeUtils.mount_required(_monitor_label, vbox, "MonitorLabel")
 
 
-func _button(text: String, on_press: Callable) -> Button:
+func _add_button(parent: Node, node_name: String, text: String, on_press: Callable) -> void:
 	var b := Button.new()
 	b.text = text
 	b.pressed.connect(on_press)
-	return b
+	NodeUtils.mount_required(b, parent, node_name)
 
 
 func _clear_save() -> void:

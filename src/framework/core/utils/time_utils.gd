@@ -26,6 +26,7 @@ static func now_string() -> String:
 ## 将秒数格式化为 MM:SS 字符串（例如 03:05）。[br]
 ## 常用于倒计时或局内游戏时间显示。
 static func format_mm_ss(total_seconds: int) -> String:
+	@warning_ignore("integer_division")   # 有意:取整分钟
 	var m := total_seconds / SECONDS_PER_MINUTE
 	var s := total_seconds % SECONDS_PER_MINUTE
 	return "%02d:%02d" % [m, s]
@@ -34,8 +35,10 @@ static func format_mm_ss(total_seconds: int) -> String:
 ## 将秒数格式化为 HH:MM:SS 字符串（例如 01:25:09）。[br]
 ## 常用于长线挂机奖励倒计时。
 static func format_hh_mm_ss(total_seconds: int) -> String:
+	@warning_ignore("integer_division")   # 有意:取整小时
 	var h := total_seconds / SECONDS_PER_HOUR
 	var rem := total_seconds % SECONDS_PER_HOUR
+	@warning_ignore("integer_division")   # 有意:取整分钟
 	var m := rem / SECONDS_PER_MINUTE
 	var s := rem % SECONDS_PER_MINUTE
 	return "%02d:%02d:%02d" % [h, m, s]

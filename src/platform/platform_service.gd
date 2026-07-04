@@ -47,6 +47,9 @@ func _init_or_downgrade(provider: PlatformProvider, fallback: PlatformProvider) 
 	var done: Array[bool] = [false]
 	var ok: Array[bool] = [false]
 	(func() -> void:
+		# @abstract initialize 无函数体,编译器看不出它是协程而误报 await 多余;
+		# 但真实现(如 SDK 初始化)是异步的,await 必须留。
+		@warning_ignore("redundant_await")
 		ok[0] = await provider.initialize()
 		done[0] = true
 	).call()
@@ -61,6 +64,7 @@ func _init_or_downgrade(provider: PlatformProvider, fallback: PlatformProvider) 
 
 	var reason := "failed" if done[0] else "timeout(%.0fs)" % _INIT_TIMEOUT
 	App.log.warn("platform", "provider init %s — downgrading to null" % reason)
+	@warning_ignore("redundant_await")   # 同上:@abstract 方法,真实现可能异步
 	await fallback.initialize()
 	return fallback
 

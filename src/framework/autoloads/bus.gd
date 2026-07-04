@@ -8,6 +8,11 @@ extends Node
 ##
 ## 按领域分组(app / scene / ui / economy / platform …),每个领域一个 #region,
 ## 只在对应里程碑真正落地该领域功能时才添加信号,不预先占位(YAGNI)。
+##
+## 全文件关掉 unused_signal 警告:Bus 的信号**按设计**都在别的文件里 emit/connect
+## (发出者与接收者解耦),bus.gd 内部一次都不 emit,静态分析据此误报"未使用"。
+## 只在本文件抑制,其他地方(如实体脚本声明却没 emit 的信号)仍然照常告警。
+@warning_ignore_start("unused_signal")
 
 #region App domain
 ## 应用切到后台(NOTIFICATION_APPLICATION_PAUSED)。由 [App] 转发。

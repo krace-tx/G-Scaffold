@@ -28,33 +28,35 @@ func _build_ui() -> void:
 	var vbox := VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_CENTER)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	add_child(vbox)
+	NodeUtils.mount_required(vbox, self, "VBox")
 
 	var title := Label.new()
 	title.text = "G-Scaffold Demo — Main Menu"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(title)
+	NodeUtils.mount_required(title, vbox, "Title")
 
 	_coins_label = Label.new()
 	_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(_coins_label)
+	NodeUtils.mount_required(_coins_label, vbox, "CoinsLabel")
 
-	vbox.add_child(_button("Enter Level", func() -> void: App.scenes.replace(SceneIds.LEVEL)))
-	vbox.add_child(_button("Settings", func() -> void: App.ui.open(UIIds.SETTINGS)))
-	vbox.add_child(_button("Watch Ad (+%d coins)" % _AD_REWARD, _on_watch_ad))
-	vbox.add_child(_button("Debug Panel", func() -> void: App.ui.open(UIIds.DEBUG)))
+	_add_button(vbox, "EnterLevelButton", "Enter Level", func() -> void: App.scenes.replace(SceneIds.LEVEL))
+	_add_button(vbox, "SettingsButton", "Settings", func() -> void: App.ui.open(UIIds.SETTINGS))
+	_add_button(vbox, "WatchAdButton", "Watch Ad (+%d coins)" % _AD_REWARD, _on_watch_ad)
+	_add_button(vbox, "DebugPanelButton", "Debug Panel", func() -> void: App.ui.open(UIIds.DEBUG))
 
 
-func _button(text: String, on_press: Callable) -> Button:
+func _add_button(parent: Node, node_name: String, text: String, on_press: Callable) -> void:
 	var b := Button.new()
 	b.text = text
 	b.custom_minimum_size = Vector2(220, 0)
 	b.pressed.connect(on_press)
-	return b
+	NodeUtils.mount_required(b, parent, node_name)
 
 
 ## 看激励广告 → 发奖流程:请求 → (Null 模拟观看) → 看完则加金币、存档、发 Bus 事实。
 func _on_watch_ad() -> void:
+	# @abstract show_rewarded 编译期看不出是协程,但 Null/真实现里都有 await,必须等。
+	@warning_ignore("redundant_await")
 	var res := await App.platform.ads.show_rewarded(&"double_coins")
 	if not res.is_rewarded():
 		App.log.info("main_menu", "ad not rewarded (%s)" % res.status)

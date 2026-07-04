@@ -31,6 +31,18 @@ static func mount(node: Node, parent: Node, custom_name: String = "") -> Result:
 	return Result.ok(node)
 
 
+## 挂载一个**结构上必然成功**的节点(如服务给自己建的子节点),失败即编程 bug。[br]
+## 与 [method mount] 的分工:mount 返回 [Result] 给"可能失败、需分支处理"的调用方
+## (如游戏代码 spawn 后挂载);mount_required 给"不该失败"的内部基建——失败时
+## [code]push_error[/code] 大声报出(绝不静默吞),并**直接返回该节点**方便链式书写。[br]
+## 用 push_error 而非 App.log 是刻意的:NodeUtils 是 core 纯工具,不依赖任何服务/autoload。
+static func mount_required(node: Node, parent: Node, custom_name: String = "") -> Node:
+	var res := mount(node, parent, custom_name)
+	if res.is_err():
+		push_error("mount_required 失败: %s" % res.error)
+	return node
+
+
 ## 安全地实例化并挂载一个场景节点。[br]
 ## [param scene] 要实例化的预制体；[param parent] 挂载的目标父节点。[br]
 ## [param custom_name] 可选，指定节点名称以优化场景树渲染性能。[br]
