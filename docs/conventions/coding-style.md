@@ -75,7 +75,7 @@ func _do_the_thing() -> void:
 - **六个区块的相对顺序固定**:Signals → Constants & Enums → Exports & State → Lifecycle → Public API → Internal。用不到的区块直接省略,不留空壳。
 - **`class_name` / `extends` / 文档注释在所有 region 之外**,置于文件顶部。
 - **区块内部再按官方成员顺序**排列(见规则七)。
-- 平凡脚本(如只有几行的一次性场景脚本、小 Resource 类)可豁免分块——[result.gd](../../src/framework/core/result.gd) 这类就短到不需要。判断标准:分块后是否真的更好读,而不是徒增噪声。
+- 平凡脚本(只有几行的一次性场景脚本、两三行的小工具类)可豁免分块。判断标准:分块后是否真的更好读,而不是徒增噪声。有 3 个以上方法的类,即使短(如 [result.gd](../../src/framework/core/result.gd) 仅用了 3 个区块),也建议分块以保持统一目录。
 
 ---
 

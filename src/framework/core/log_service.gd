@@ -1,4 +1,4 @@
-class_name LogService 
+class_name LogService
 extends RefCounted
 
 ## 全项目统一日志服务。
@@ -25,18 +25,22 @@ var _entries: PackedStringArray = PackedStringArray()
 #endregion
 
 #region Public API
+## 记录一条 DEBUG 级日志([param tag] 为来源模块名,[param msg] 为内容)。
 func debug(tag: String, msg: String) -> void:
 	_log(Level.DEBUG, tag, msg)
 
 
+## 记录一条 INFO 级日志。
 func info(tag: String, msg: String) -> void:
 	_log(Level.INFO, tag, msg)
 
 
+## 记录一条 WARN 级日志(经 push_warning,出现在调试器错误面板)。
 func warn(tag: String, msg: String) -> void:
 	_log(Level.WARN, tag, msg)
 
 
+## 记录一条 ERROR 级日志(经 push_error,出现在调试器错误面板)。
 func error(tag: String, msg: String) -> void:
 	_log(Level.ERROR, tag, msg)
 
@@ -55,10 +59,23 @@ func clear() -> void:
 func _log(level: Level, tag: String, msg: String) -> void:
 	if level < min_level:
 		return
-	var line := "[%s][%s] %s" % [_LEVEL_TAGS[level], tag, msg]
+	var line := _format(level, tag, msg)
+	_buffer(line)
+	_emit(level, line)
+
+
+func _format(level: Level, tag: String, msg: String) -> String:
+	return "[%s][%s] %s" % [_LEVEL_TAGS[level], tag, msg]
+
+
+## 追加到环形缓冲,超出容量时丢弃最旧一条。
+func _buffer(line: String) -> void:
 	_entries.append(line)
 	if _entries.size() > _MAX_ENTRIES:
 		_entries.remove_at(0)
+
+
+func _emit(level: Level, line: String) -> void:
 	match level:
 		Level.WARN:
 			push_warning(line)
