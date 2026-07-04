@@ -17,7 +17,7 @@
 | M1 | SceneService + UIService(场景与 UI 生命周期) | 4~6 天 | M0 | ✅ 已完成 |
 | M2 | SaveService + ConfigService + TimeService(数据层) | 3~4 天 | M0 | ✅ 已完成 |
 | M3 | 平台防腐层:契约 + Null 全家桶 + Android/iOS 骨架 | 4~6 天 | M0 | ✅ 已完成(不含真机联调)|
-| M4 | NetworkService(传输层) | 3~4 天 | M0, M2 | ⬜ 未开始 |
+| M4 | NetworkService(传输层) | 3~4 天 | M0, M2 | ✅ 已完成 |
 | M5 | AudioService + AssetService | 3~4 天 | M0 | ⬜ 未开始 |
 | M6 | 质量收口:检查脚本、调试面板、单测、全流程 Demo | 3~5 天 | M1~M5 | ⬜ 未开始 |
 
@@ -113,12 +113,19 @@
 
 ## M4 NetworkService(3~4 天)
 
-- [ ] `framework/core/network_service.gd` — HTTPRequest 池、超时、指数退避重试、鉴权头注入、统一返回 `Result`
-- [ ] 登录/校时握手流程(接通 TimeService 与 ConfigService 的远程层)
-- [ ] 无后端环境的 Mock 模式(本地 JSON 应答,编辑器可跑)
-- [ ] 文档:`modules/network-service.md`
+- [x] `framework/core/network_service.gd` — HTTPRequest 池(`_free_pool` 复用)、超时(`request_timeout`)、指数退避重试(网络层失败/5xx 重试,4xx 不重试)、鉴权头注入(`Authorization: Bearer`)、统一返回 `Result` ✅ 无头验证通过
+- [x] `login_and_sync()`:登录 → `App.time.sync_from_server` 校时 → `App.config.apply_remote` 拉配置,一次性握手,任一步失败即降级(不阻断)✅
+- [x] Mock 模式:`enable_mock({path: Dictionary|Callable})`,未接后端时 Bootstrap 阶段 4 默认用它演示完整链路 ✅
+- [x] 文档:`modules/network-service.md`;modules 索引更新 ✅
+- [x] `App.net` 字段;`App._on_app_resumed` 前台恢复时 fire-and-forget 重新握手;Bootstrap 阶段 4 接入 ✅
 
 **验收**:Mock 模式下完成"登录 → 校时 → 拉远程配置"链路;断网状态下所有请求正确超时并返回 err,游戏不卡死。
+
+✅ **M4 已完成并通过无头验证**(2026-07-04,9 项断言全过):
+- Mock 完整握手:`login_and_sync()` → token 写入、`TimeService.is_trusted()` 变真且 `now()` 取服务器时间、`ConfigService` 拿到 remote 值
+- Mock 缺失 path / 自定义 Callable 失败分支均返回 `err`,不崩
+- **真实网络路径**:请求不可路由地址(`request_timeout=0.5s, max_retries=1`),实测 ~1.1s 内返回 `err`,未卡死,验证"断网不挂起"
+- 4xx 不重试、5xx/网络层失败按指数退避重试,是有意的区分(重试 4xx 无意义,见 network-service.md)
 
 ## M5 音频与资产(3~4 天)
 

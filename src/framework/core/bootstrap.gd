@@ -18,7 +18,7 @@ func _run() -> void:
 	_init_ui_and_scene_services()
 	_phase_2_local_config_and_save()
 	await _phase_3_platform_sdks()   # 异步:并行初始化 provider,await 到全部就绪/降级
-	_phase_4_remote_config()
+	await _phase_4_remote_config()   # 异步:登录 + 校时 + 拉配置握手
 	_phase_5_asset_preload()
 	_phase_6_enter_main_menu()
 
@@ -70,9 +70,21 @@ func _phase_3_platform_sdks() -> void:
 	App.log.info("boot", "phase 3/6: platform sdks ready")
 
 
-## 阶段 4:远程配置拉取(3s 超时)。失败策略:降级为本地缓存/默认值。
+## 阶段 4:登录 + 校时 + 拉远程配置握手。失败策略:降级为本地缓存/默认值,不阻断
+## (阶段 2 已 load_local,ConfigService 仍能答出上次缓存或代码默认值)。
+##
+## 框架本身没有真实后端,这里用 Mock 应答让 F5/CI 无头都能跑通完整链路;
+## 真实项目接入后端后,把下面的 enable_mock 换成 App.net.configure(base_url, token)。
 func _phase_4_remote_config() -> void:
-	App.log.info("boot", "phase 4/6: remote config — skipped (see M4)")
+	App.net = NetworkService.new()
+	App.add_child(App.net)
+	App.net.enable_mock(_demo_mock_responses())
+
+	var res := await App.net.login_and_sync()
+	if res.is_err():
+		App.log.warn("boot", "phase 4/6: remote config unavailable, using local cache/defaults: %s" % res.error)
+	else:
+		App.log.info("boot", "phase 4/6: remote config ready")
 
 
 ## 阶段 5:核心资产预热。失败策略:阻断,重试。
@@ -87,4 +99,16 @@ func _phase_5_asset_preload() -> void:
 func _phase_6_enter_main_menu() -> void:
 	App.log.info("boot", "phase 6/6: entering main menu")
 	App.scenes.replace(SceneIds.MAIN_MENU)
+
+
+## 框架自带的演示用 Mock 应答表(path → 响应体),仅用于让 Bootstrap 在没有真实
+## 后端时也能演示完整链路。真实项目替换阶段 4 的接线后,这个方法可以删除。
+func _demo_mock_responses() -> Dictionary:
+	return {
+		"/auth/login": {
+			"token": "demo-token",
+			"server_time_msec": int(Time.get_unix_time_from_system() * 1000.0),
+		},
+		"/config/remote": {"maintenance": false},
+	}
 #endregion

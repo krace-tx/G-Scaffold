@@ -26,6 +26,8 @@ var config: ConfigService  ## M2:三层合并配置(remote > local > defaults)
 var save: SaveService      ## M2:版本化 JSON 存档
 
 var platform: PlatformService  ## M3:平台能力门面(App.platform.ads / .analytics)
+
+var net: NetworkService    ## M4:传输层(HTTP 池 + 重试 + 鉴权 + Mock 模式)
 #endregion
 
 #region Lifecycle
@@ -49,7 +51,14 @@ func _on_app_paused() -> void:
 
 func _on_app_resumed() -> void:
 	if log: log.info("app", "application resumed")
-	# TODO(M4): 重连、刷新远程配置、校时。
+	# 恢复时重新握手:校时可能已过期(挂后台太久),远程配置也可能已变。
+	# fire-and-forget:不阻塞 _notification 处理,失败只记日志、不影响恢复流程。
+	if net:
+		(func() -> void:
+			var res := await net.login_and_sync()
+			if res.is_err():
+				log.warn("app", "resume re-sync failed: %s" % res.error)
+		).call()
 	Bus.app_resumed.emit()
 
 

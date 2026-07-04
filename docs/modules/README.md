@@ -14,7 +14,7 @@
 | TimeService | [time-service.md](time-service.md) | active(M2 已实现) |
 | ConfigService | [config-service.md](config-service.md) | active(M2 已实现) |
 | SaveService | [save-service.md](save-service.md) | active(M2 已实现) |
-| NetworkService | — | 规划中 |
+| NetworkService | [network-service.md](network-service.md) | active(M4 已实现) |
 | AssetService | — | 规划中 |
 | AudioService | — | 规划中 |
 | PlatformService(ads/analytics) | [platform-service.md](platform-service.md) | active(M3 已实现) |
