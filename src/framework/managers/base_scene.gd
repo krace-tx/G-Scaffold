@@ -11,15 +11,29 @@ extends Node
 ## 有 10 秒超时保护(见 docs/modules/scene-service.md 失败策略):超时后
 ## SceneService 会强制揭开遮罩继续,场景自身仍会跑完,只是玩家不再等待。
 ## 详见 docs/architecture/boot-sequence.md、docs/modules/scene-service.md。
+##
+## [b]为什么只有两个钩子[/b][br]
+## 当前 SceneService 只支持 replace(整体替换,旧场景被销毁),两钩子足够。
+## 刻意不引入 _on_suspend / _on_resume——若未来支持栈式切换(push/pop:压入
+## 战斗/小游戏子场景、返回时恢复原场景),再按需补这两个,不预先摊派子类负担
+## (YAGNI,见 docs/conventions/coding-style.md)。[br]
+## [b]预留命名空间[/b]:[code]_on_suspend[/code](被上层场景压住、暂停但保活)、
+## [code]_on_resume(params)[/code](上层 pop 后恢复到前台,params 可带回传结果)
+## 这两个名字为将来的栈式切换保留,现在禁止占用。
 
 #region Public API
-## 进场钩子,[param _params] 为 SceneService.replace() 透传的参数。
-## 默认空实现,子类按需覆写并可 await。
+## 进场钩子:场景实例化并入树后、遮罩揭开前调用。[param _params] 为
+## SceneService.replace() 透传的参数。默认空实现,子类按需覆写并可 await。
 func _on_enter(_params: Dictionary) -> void:
 	pass
 
 
-## 退场钩子,场景即将被替换前调用。默认空实现,子类按需覆写并可 await。
+## 退场钩子:场景[b]真正销毁前[/b]调用(而非"离开前台")。默认空实现,
+## 子类按需覆写并可 await。
+##
+## 语义严格限定为"销毁前"——将来若引入栈式切换,"被压住但保活"会是另一个
+## 独立钩子 _on_suspend,不会复用本方法。所以"保存进度"这类逻辑放这里是安全的:
+## 它只在场景确实要消失时触发,不会在被临时挂起时误触发。
 func _on_exit() -> void:
 	pass
 #endregion

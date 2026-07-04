@@ -26,11 +26,19 @@ func get_current_id() -> StringName                                           # 
 所有顶层场景根节点继承 `BaseScene`:
 
 ```gdscript
-func _on_enter(params: Dictionary) -> void   # 进场,可 await(如播放入场演出)
-func _on_exit() -> void                      # 退场,可 await(如保存、断开监听)
+func _on_enter(params: Dictionary) -> void   # 进场(实例化入树后、遮罩揭开前),可 await
+func _on_exit() -> void                      # 真正销毁前调用,可 await(保存、断开监听)
 ```
 
 切换流程:`旧场景._on_exit()` → 转场遮罩 → 异步加载新场景 → 实例化 → `新场景._on_enter()` → 揭开遮罩。
+
+### 关于栈式切换(push/pop)的取舍
+
+当前只支持 `replace`(整体替换、旧场景销毁),因此契约只有两个钩子,且 `_on_exit` 语义**严格限定为"销毁前"**,不是"离开前台"。这条语义边界是刻意画死的:
+
+- 未定:项目是否会有"压入独立子场景(战斗/小游戏)、返回时把原场景**原样保活恢复**"的需求。这类需求才需要 push/pop,伴随 `_on_suspend` / `_on_resume(params)` 两个新钩子。
+- 全屏菜单(暂停/设置/背包)**不构成**上栈理由——那是 UIService 分层弹窗的职责,不销毁底下场景。
+- 现在**不预先实现** suspend/resume(YAGNI),但已在 `BaseScene` 里为这两个名字预留命名空间,并把 `_on_exit` 语义写死为"销毁前"——这样将来真上栈时,"保存进度"这类写在 `_on_exit` 里的逻辑不会因语义漂移而被临时挂起误触发。
 
 ## Bus 事件
 
