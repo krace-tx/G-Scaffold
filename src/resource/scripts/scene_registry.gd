@@ -21,4 +21,12 @@ func resolve_path(id: StringName) -> String:
 		if entry.id == id:
 			return entry.scene_path
 	return ""
+
+
+## 查找 [param id] 对应的完整记录(需要 asset_group 等字段时用),不存在返回 null。
+func find(id: StringName) -> SceneRegistryEntry:
+	for entry in entries:
+		if entry.id == id:
+			return entry
+	return null
 #endregion

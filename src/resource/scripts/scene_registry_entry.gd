@@ -12,4 +12,7 @@ extends Resource
 #region Exports & State
 @export var id: StringName = &""
 @export var scene_path: String = ""
+## 本场景关联的资产分组(可空)。SceneService 切入本场景前预载该组、离开后释放,
+## 用于按场景控制内存峰值。留空表示本场景不走分组预载(行为与 M1 完全一致)。
+@export var asset_group: StringName = &""
 #endregion

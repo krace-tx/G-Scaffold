@@ -28,6 +28,9 @@ var save: SaveService      ## M2:版本化 JSON 存档
 var platform: PlatformService  ## M3:平台能力门面(App.platform.ads / .analytics)
 
 var net: NetworkService    ## M4:传输层(HTTP 池 + 重试 + 鉴权 + Mock 模式)
+
+var audio: AudioService    ## M5:BGM/SFX 音量分组 + 交叉淡变 + 播放器池
+var assets: AssetService   ## M5:asset_map + 按组预载/释放
 #endregion
 
 #region Lifecycle

@@ -22,6 +22,9 @@ var _registry: SceneRegistry
 ## 当前已进入的顶层场景 id;尚未切换过任何场景时为空字符串。
 var _current_id: StringName = &""
 
+## 当前场景关联的资产分组;切走时释放它。空表示当前场景无分组资产。
+var _current_group: StringName = &""
+
 ## 全屏黑色转场遮罩,常驻在 layer=100 的 CanvasLayer 上,通过 alpha 淡入淡出。
 var _overlay: ColorRect
 
@@ -85,24 +88,37 @@ func _drain_queue() -> void:
 ## 5. 遮罩仍盖着时跑 _on_enter(场景做准备,玩家看不到闪烁)→ 再淡入揭开
 ## 6. 最后才发 scene_changed:此刻新场景已入场完毕,监听方拿到的是"已就绪"状态
 func _switch_to(scene_id: StringName, _transition: StringName) -> void:
-	var scene_path := _registry.resolve_path(scene_id) if _registry else ""
-	if scene_path.is_empty():
+	var entry := _registry.find(scene_id) if _registry else null
+	if entry == null or entry.scene_path.is_empty():
 		_fail(scene_id, "unknown scene id")
 		return
 
+	var old_group := _current_group
+	var new_group := entry.asset_group
+
 	await _fade_out()
 
-	var packed := await _load_threaded(scene_path)
+	# 遮罩盖住后、加载场景前先预载本场景的资产组(空组自动跳过,行为同 M1)。
+	if App.assets and new_group != &"":
+		App.assets.preload_group(new_group)
+
+	var packed := await _load_threaded(entry.scene_path)
 	if packed == null:
-		_fail(scene_id, "failed to load: %s" % scene_path)
+		_fail(scene_id, "failed to load: %s" % entry.scene_path)
 		await _fade_in()   # 加载失败也要揭开遮罩,否则停在当前场景上却是一片黑
 		return
 
 	get_tree().change_scene_to_packed(packed)
 	_current_id = scene_id
+	_current_group = new_group
 	await get_tree().process_frame   # 等新场景根节点真正入树,下一行 current_scene 才有效
 
 	await _run_on_enter(scene_id)
+
+	# 新场景已入场,释放上一个场景独占的资产组(与新组相同则保留,避免刚载又释放)。
+	if App.assets and old_group != &"" and old_group != new_group:
+		App.assets.release_group(old_group)
+
 	await _fade_in()
 	Bus.scene_changed.emit(scene_id)
 

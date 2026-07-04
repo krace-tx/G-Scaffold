@@ -11,3 +11,4 @@ extends RefCounted
 
 const SCENE_REGISTRY: String = "res://src/resource/data/scene_registry.tres"
 const UI_REGISTRY: String = "res://src/resource/data/ui_registry.tres"
+const ASSET_MAP: String = "res://src/resource/data/asset_map.tres"

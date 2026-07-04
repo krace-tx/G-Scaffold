@@ -18,7 +18,7 @@
 | M2 | SaveService + ConfigService + TimeService(数据层) | 3~4 天 | M0 | ✅ 已完成 |
 | M3 | 平台防腐层:契约 + Null 全家桶 + Android/iOS 骨架 | 4~6 天 | M0 | ✅ 已完成(不含真机联调)|
 | M4 | NetworkService(传输层) | 3~4 天 | M0, M2 | ✅ 已完成 |
-| M5 | AudioService + AssetService | 3~4 天 | M0 | ⬜ 未开始 |
+| M5 | AudioService + AssetService | 3~4 天 | M0 | ✅ 已完成 |
 | M6 | 质量收口:检查脚本、调试面板、单测、全流程 Demo | 3~5 天 | M1~M5 | ⬜ 未开始 |
 
 并行性:M0 完成后,M1 / M2 / M3 / M5 相互独立,可任意穿插;M4 依赖 M2(需要 TimeService 校时)。单人开发建议按编号顺序做,**M1 优先于一切**——它是现有项目混乱的重灾区,迁移收益最大。
@@ -129,12 +129,19 @@
 
 ## M5 音频与资产(3~4 天)
 
-- [ ] `framework/managers/audio_service.gd` — BGM/SFX 总线分组音量、BGM 跨场景淡入淡出、SFX 播放器池
-- [ ] `framework/managers/asset_service.gd` — `asset_map.tres`(id → 路径 + 分组)、按组预载/释放、`AssetIds` 常量类
-- [ ] Bootstrap 阶段 5 接入核心资产预热;SceneService 切场景时按组预载/释放
-- [ ] 文档:`modules/audio-service.md`、`modules/asset-service.md`
+- [x] `framework/managers/audio_service.gd` — BGM/SFX 程序化总线 + 线性音量、双播放器交叉淡变(同曲不打断)、SFX 池;kill-tween 消除快速连切竞态 ✅ 无头验证通过
+- [x] `framework/managers/asset_service.gd` — `asset_map.tres`(id → 路径 + 分组)、`preload_group`/`release_group`、`get_asset`、`AssetIds` 常量类;`AssetMap`/`AssetMapEntry` 脚本 + `ResPaths.ASSET_MAP` ✅ 无头验证通过
+- [x] Bootstrap 阶段 5 预热 `&"core"` 组;SceneService 按 `SceneRegistryEntry.asset_group` 切场景时预载新组/释放旧组(空组跳过,行为同 M1)✅ 无头验证通过
+- [x] 文档:`modules/audio-service.md`、`modules/asset-service.md`;modules 索引更新 ✅
 
 **验收**:切场景 BGM 平滑过渡不中断;监视内存,离开场景后其资产组确实被释放。
+
+✅ **M5 已完成并通过无头验证**(2026-07-04,音频/资产 12 项 + 场景集成 6 项):
+- 音频:BGM/SFX 总线程序化创建、音量 set/get 往返、交叉淡变切曲后 active 播放器持有新曲且在播、同曲不 flip(不打断)、SFX 池轮转
+- 资产:core 组启动预热、`get_asset` 缓存命中、未知 id 返回 null、**release 后资源被引擎回收(WeakRef 变空)**
+- 场景集成:进 level 预载 level 组、回 main_menu 释放 level 组、core 组始终保留
+- **踩坑**:`current_id` 在切换中途(change_scene 时)就更新,而 `scene_changed` 在淡入结束才发——"切换真正完成"必须以 `scene_changed` 为准,不能靠 `current_id`。测试改用"从最早期数 scene_changed 完成次数"才稳定(否则会 catch 到上一次切换的滞后 emit)
+- **音频竞态**:快速连切 BGM 时旧淡变的 fire-and-forget 收尾 `stop()` 会误杀新曲;改为存 tween、新切换先 kill 旧 tween、用 `tween_callback` 代替 `await`(kill 时 callback 不触发)彻底消除
 
 ## M6 质量收口(3~5 天)
 

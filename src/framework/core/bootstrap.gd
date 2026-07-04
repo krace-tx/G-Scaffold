@@ -15,7 +15,7 @@ func _ready() -> void:
 #region Internal
 func _run() -> void:
 	_phase_1_log()
-	_init_ui_and_scene_services()
+	_init_tree_services()
 	_phase_2_local_config_and_save()
 	await _phase_3_platform_sdks()   # 异步:并行初始化 provider,await 到全部就绪/降级
 	await _phase_4_remote_config()   # 异步:登录 + 校时 + 拉配置握手
@@ -30,9 +30,9 @@ func _phase_1_log() -> void:
 
 
 ## 不是 boot-sequence.md 表格里的编号阶段(那张表只列容易失败的业务初始化),
-## 只是内核服务的接线步骤。都挂到 App 下而不是 Boot 场景下,这样它们才能在
-## phase 6 把 Boot 场景整个替换掉之后继续存活。
-func _init_ui_and_scene_services() -> void:
+## 只是需要常驻场景树的内核服务的接线步骤。都挂到 App 下而不是 Boot 场景下,
+## 这样它们才能在 phase 6 把 Boot 场景整个替换掉之后继续存活。
+func _init_tree_services() -> void:
 	var scene_service := SceneService.new()
 	App.add_child(scene_service)
 	App.scenes = scene_service
@@ -41,7 +41,15 @@ func _init_ui_and_scene_services() -> void:
 	App.add_child(ui_service)
 	App.ui = ui_service
 
-	App.log.info("boot", "scene & ui services ready")
+	var asset_service := AssetService.new()
+	App.add_child(asset_service)
+	App.assets = asset_service
+
+	var audio_service := AudioService.new()
+	App.add_child(audio_service)
+	App.audio = audio_service
+
+	App.log.info("boot", "scene, ui, asset & audio services ready")
 
 
 ## 阶段 2:时间源 + 本地配置 + 存档加载(含版本迁移)。失败策略:存档 I/O 失败
@@ -87,9 +95,11 @@ func _phase_4_remote_config() -> void:
 		App.log.info("boot", "phase 4/6: remote config ready")
 
 
-## 阶段 5:核心资产预热。失败策略:阻断,重试。
+## 阶段 5:核心资产预热(常驻资产的 &"core" 组)。之后各场景的资产由 SceneService
+## 在切场景时按 asset_group 预载/释放,不在此处理。
 func _phase_5_asset_preload() -> void:
-	App.log.info("boot", "phase 5/6: asset preload — skipped (see M5)")
+	App.assets.preload_group(&"core")
+	App.log.info("boot", "phase 5/6: core assets preloaded")
 
 
 ## 阶段 6:进入主菜单场景,经 SceneService(全项目唯一允许切场景的入口)。

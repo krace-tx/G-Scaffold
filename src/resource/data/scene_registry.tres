@@ -12,6 +12,7 @@ scene_path = "res://src/game/scenes/main_menu.tscn"
 script = ExtResource("2_entry")
 id = &"level"
 scene_path = "res://src/game/scenes/level.tscn"
+asset_group = &"level"
 
 [resource]
 script = ExtResource("1_registry")
