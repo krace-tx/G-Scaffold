@@ -1,6 +1,6 @@
 # SceneService 模块文档
 
-> status: draft(代码未实现,本文兼作模块文档示例)| 最后更新: 2026-07-04 | 代码位置: `res://src/framework/managers/scene_service.gd`
+> status: active | 最后更新: 2026-07-04 | 代码位置: `res://src/framework/managers/scene_service.gd`
 
 ## 职责与边界
 

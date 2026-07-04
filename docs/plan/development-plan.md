@@ -14,7 +14,7 @@
 | 里程碑 | 内容 | 预估 | 前置 | 状态 |
 |---|---|---|---|---|
 | M0 | 内核四件套:App / Bus / LogService / Bootstrap | 2~3 天 | — | ✅ 已完成 |
-| M1 | SceneService + UIService(场景与 UI 生命周期) | 4~6 天 | M0 | ⬜ 未开始 |
+| M1 | SceneService + UIService(场景与 UI 生命周期) | 4~6 天 | M0 | ✅ 已完成 |
 | M2 | SaveService + ConfigService + TimeService(数据层) | 3~4 天 | M0 | ⬜ 未开始 |
 | M3 | 平台防腐层:契约 + Null 全家桶 + Android/iOS 骨架 | 4~6 天 | M0 | ⬜ 未开始 |
 | M4 | NetworkService(传输层) | 3~4 天 | M0, M2 | ⬜ 未开始 |
@@ -58,13 +58,21 @@
 - 命名冲突:`SceneRegistry.get_path()` 与 `Resource` 内置的 `get_path()`(返回资源自身磁盘路径)签名不兼容,GDScript 视为非法覆写、直接报编译错误(不是简单警告,`@warning_ignore` 无法压下),改名为 `resolve_path` 解决
 - **重要踩坑**:GDScript 的 lambda 闭包捕获局部变量是**按值快照**,不是按引用。`_run_on_enter` 最初用一个 `bool finished` 变量在 fire-and-forget lambda 内部置真等待完成,结果外层循环永远看不到这个变化,导致协程空转到 10 秒超时——headless 测试中因为提前 `quit()` 而表现为进程挂起 + `ObjectDB instances leaked at exit`。修复:改用单元素 `Array`(引用类型)做可变完成标记。这个坑具有普遍性,后续任何"fire-and-forget + 完成标记"模式都要避免用 bool/int 等值类型做跨闭包共享状态,已记入 [scene_service.gd](../../src/framework/managers/scene_service.gd) 内联注释
 
-- [ ] `framework/managers/base_ui.gd` — `_on_open/_on_close/_on_back` 契约
-- [ ] `framework/managers/ui_service.gd` — 分层 CanvasLayer(HUD/Window/Popup/Toast/Loading/Debug)、每层栈、`open/close/handle_back`、KEEP/DESTROY 缓存策略
-- [ ] `resource/data/ui_registry.tres` + `UIIds` 常量类
-- [ ] 占位场景与 UI:主菜单、一个空关卡、一个设置弹窗(供验收与后续里程碑复用)
-- [ ] 文档:`modules/ui-service.md`;`scene-service.md` 状态改 `active`
+- [x] `resource/scripts/res_paths.gd`(`ResPaths` 常量类)— 集中管理框架硬编码的 `res://` 资源文件路径。已把 `SceneService._REGISTRY_PATH` 迁为 `ResPaths.SCENE_REGISTRY`,ui_service 用 `ResPaths.UI_REGISTRY` ✅
+- [x] `framework/managers/base_ui.gd` — `_on_open/_on_close/_on_back` 契约(extends Control)✅
+- [x] `framework/managers/ui_service.gd` — 分层 CanvasLayer(HUD=10/Window=20/Popup=30/Toast=40/Loading=50/Debug=110,与遮罩 `layer=100` 错开)、每层栈、`open/close/handle_back`、KEEP/DESTROY 缓存策略 ✅ 无头验证通过
+- [x] `resource/data/ui_registry.tres` + `resource/scripts/ui_registry.gd` + `ui_registry_entry.gd`(Layer/Cache 枚举)+ `UIIds` 常量类 ✅
+- [x] 占位场景与 UI:main_menu(已有)、level(空关卡)、settings_panel(设置弹窗);SceneIds 加 `LEVEL`,UIIds 加 `SETTINGS` ✅
+- [x] 文档:`modules/ui-service.md`(active);`scene-service.md` 状态改 `active`;`modules/README.md` 索引更新 ✅
+- [x] 接线:`App.ui` 字段 + `App._notification` 接管 `NOTIFICATION_WM_GO_BACK_REQUEST` → `handle_back()`;Bus 加 `scene_changed`/`scene_change_failed`/`ui_opened`/`ui_closed`;Bootstrap 内核阶段一并创建 SceneService + UIService ✅
 
 **验收**:主菜单 → 关卡 → 返回主菜单,转场无黑屏残留;设置弹窗开/关/Android 返回键(编辑器用 ui_cancel 模拟)三条路径正确;连续快速点击切场景不崩溃。
+
+✅ **M1 已完成并通过无头验证**(2026-07-04):
+- 场景往返:`replace(LEVEL)` → `current_scene == "Level"` → `replace(MAIN_MENU)`,`scene_changed` 逐次触发,无黑屏
+- UI 生命周期:`open(SETTINGS)` 返回实例、`is_open` 开关正确、`close` 后移除;`ui_opened`/`ui_closed` 事件按序发出
+- 返回键路由:开弹窗后 `handle_back()` 关掉栈顶弹窗并返回 true;空栈时返回 false(交场景级)
+- **踩坑**:`class_name` 脚本里"内部 `enum` 被用作自身成员类型"(如 `var min_level: Level`)在 autoload 编译级联中会触发 Godot 幻象报错(`Cannot assign LogService.Level to Level`),连累依赖链全部编译失败。根因不在 ui_service 而在 log_service 自身。修复:把自引用处**全限定**为 `LogService.Level`。此坑对所有"class_name + 自引用 enum 类型标注"通用
 
 ## M2 数据层(3~4 天)
 

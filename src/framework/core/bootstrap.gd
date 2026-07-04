@@ -15,7 +15,7 @@ func _ready() -> void:
 #region Internal
 func _run() -> void:
 	_phase_1_log()
-	_init_scene_service()
+	_init_ui_and_scene_services()
 	_phase_2_local_config_and_save()
 	_phase_3_platform_sdks()
 	_phase_4_remote_config()
@@ -30,13 +30,18 @@ func _phase_1_log() -> void:
 
 
 ## 不是 boot-sequence.md 表格里的编号阶段(那张表只列容易失败的业务初始化),
-## 只是内核服务的接线步骤。挂到 App 下而不是 Boot 场景下,这样 SceneService
-## 才能在 phase 6 把 Boot 场景整个替换掉之后继续存活。
-func _init_scene_service() -> void:
+## 只是内核服务的接线步骤。都挂到 App 下而不是 Boot 场景下,这样它们才能在
+## phase 6 把 Boot 场景整个替换掉之后继续存活。
+func _init_ui_and_scene_services() -> void:
 	var scene_service := SceneService.new()
 	App.add_child(scene_service)
 	App.scenes = scene_service
-	App.log.info("boot", "scene service ready")
+
+	var ui_service := UIService.new()
+	App.add_child(ui_service)
+	App.ui = ui_service
+
+	App.log.info("boot", "scene & ui services ready")
 
 
 ## 阶段 2:本地配置 + 存档加载(含版本迁移)。失败策略:阻断,弹重试对话框。

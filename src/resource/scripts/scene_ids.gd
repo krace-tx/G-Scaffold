@@ -6,3 +6,4 @@ extends RefCounted
 ## [member SceneRegistryEntry.id] 完全一致,否则 SceneService 找不到场景。
 
 const MAIN_MENU: StringName = &"main_menu"
+const LEVEL: StringName = &"level"

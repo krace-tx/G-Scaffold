@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SceneRegistry" load_steps=4 format=3 uid="uid://dq6n1s0t2m8yx"]
+[gd_resource type="Resource" script_class="SceneRegistry" format=3 uid="uid://dq6n1s0t2m8yx"]
 
 [ext_resource type="Script" path="res://src/resource/scripts/scene_registry.gd" id="1_registry"]
 [ext_resource type="Script" path="res://src/resource/scripts/scene_registry_entry.gd" id="2_entry"]
@@ -8,6 +8,11 @@ script = ExtResource("2_entry")
 id = &"main_menu"
 scene_path = "res://src/game/scenes/main_menu.tscn"
 
+[sub_resource type="Resource" id="Resource_level"]
+script = ExtResource("2_entry")
+id = &"level"
+scene_path = "res://src/game/scenes/level.tscn"
+
 [resource]
 script = ExtResource("1_registry")
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_main_menu")])
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_main_menu"), SubResource("Resource_level")])

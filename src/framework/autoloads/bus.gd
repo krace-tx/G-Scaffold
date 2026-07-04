@@ -24,3 +24,11 @@ signal scene_changed(scene_id: StringName)
 ## 顶层场景切换失败(id 不存在 / 加载失败)。由 [SceneService] 发出。
 signal scene_change_failed(scene_id: StringName)
 #endregion
+
+#region UI domain
+## 界面已打开(实例入树、_on_open 已调用)。由 [UIService] 发出。
+signal ui_opened(ui_id: StringName)
+
+## 界面已关闭(_on_close 已调用、已从层里移除)。由 [UIService] 发出。
+signal ui_closed(ui_id: StringName)
+#endregion

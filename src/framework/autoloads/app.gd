@@ -19,6 +19,7 @@ extends Node
 var log: LogService   ## M0:由 Bootstrap 阶段 1 最先创建
 
 var scenes: SceneService   ## M1:由 Bootstrap 创建并挂到 App 下(见 bootstrap.gd)
+var ui: UIService          ## M1:由 Bootstrap 创建并挂到 App 下
 #endregion
 
 #region Lifecycle
@@ -28,6 +29,8 @@ func _notification(what: int) -> void:
 			_on_app_paused()
 		NOTIFICATION_APPLICATION_RESUMED:
 			_on_app_resumed()
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			_on_go_back()
 #endregion
 
 #region Internal
@@ -41,4 +44,12 @@ func _on_app_resumed() -> void:
 	if log: log.info("app", "application resumed")
 	# TODO(M4): 重连、刷新远程配置、校时。
 	Bus.app_resumed.emit()
+
+
+## Android 返回键:先给 UI 栈处理(关栈顶弹窗);UI 没消费再走场景级返回。
+func _on_go_back() -> void:
+	if ui and ui.handle_back():
+		return
+	# TODO(后续):无弹窗时的场景级返回 / 主菜单退出确认(见 boot-sequence.md)。
+	if log: log.info("app", "back not consumed by ui — scene-level back is TODO")
 #endregion

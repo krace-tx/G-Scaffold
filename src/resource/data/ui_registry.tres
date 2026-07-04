@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="UIRegistry" format=3 uid="uid://bheon2aam33w"]
+
+[ext_resource type="Script" path="res://src/resource/scripts/ui_registry.gd" id="1_registry"]
+[ext_resource type="Script" path="res://src/resource/scripts/ui_registry_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="Resource_settings"]
+script = ExtResource("2_entry")
+id = &"settings"
+scene_path = "res://src/game/ui/settings_panel.tscn"
+layer = 2
+
+[resource]
+script = ExtResource("1_registry")
+entries = Array[ExtResource("2_entry")]([SubResource("Resource_settings")])
