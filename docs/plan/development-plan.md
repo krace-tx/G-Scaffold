@@ -1,6 +1,6 @@
 # 框架开发计划
 
-> status: active | 最后更新: 2026-07-04 | 预估基准:1 名开发者全职;真机 SDK 联调不计入
+> status: M0~M6 全部完成 ✅(不含真机 SDK 联调)| 最后更新: 2026-07-04 | 预估基准:1 名开发者全职
 
 ## 总目标
 
@@ -19,7 +19,7 @@
 | M3 | 平台防腐层:契约 + Null 全家桶 + Android/iOS 骨架 | 4~6 天 | M0 | ✅ 已完成(不含真机联调)|
 | M4 | NetworkService(传输层) | 3~4 天 | M0, M2 | ✅ 已完成 |
 | M5 | AudioService + AssetService | 3~4 天 | M0 | ✅ 已完成 |
-| M6 | 质量收口:检查脚本、调试面板、单测、全流程 Demo | 3~5 天 | M1~M5 | ⬜ 未开始 |
+| M6 | 质量收口:检查脚本、调试面板、单测、全流程 Demo | 3~5 天 | M1~M5 | ✅ 已完成 |
 
 并行性:M0 完成后,M1 / M2 / M3 / M5 相互独立,可任意穿插;M4 依赖 M2(需要 TimeService 校时)。单人开发建议按编号顺序做,**M1 优先于一切**——它是现有项目混乱的重灾区,迁移收益最大。
 
@@ -145,13 +145,19 @@
 
 ## M6 质量收口(3~5 天)
 
-- [ ] `tools/check_architecture.gd`(或 shell 脚本)— 实现 [directory.md](../conventions/directory.md) 的违规引用清单检查,接入 pre-commit
-- [ ] 调试面板(Debug 层 UI):场景跳转、日志查看、Bus 事件监视、存档清除/导出、FPS/内存
-- [ ] gdUnit4 单测:Result / SaveService 迁移 / ConfigService 合并 / TimeService 偏移 等纯逻辑路径
-- [ ] 全流程 Demo 打磨:启动 → 主菜单 → 关卡 → 弹窗 → 看广告(Null)→ 发奖 → 存档 → 重启验证
-- [ ] 文档全面复查:所有模块文档转 `active`,README 索引更新
+- [x] `tools/check_architecture.gd` — 实现 [directory.md](../conventions/directory.md) 违规引用清单检查(framework→game/platform、change_scene 越界、裸 assets 路径),退出码=违规数;`tools/README.md` 附 pre-commit 接入方式 ✅ 无头验证通过(含故意埋雷)
+- [x] 调试面板 `game/ui/debug_panel.gd`(Debug 层,KEEP 缓存):FPS/内存、场景跳转、存档清除(`SaveService.wipe`)/导出(`to_json`)、Bus 事件监视;注册 `UIIds.DEBUG` ✅
+- [x] 无头单测 `tools/tests/`(不依赖 gdUnit4,零依赖 CI 就绪):Result / SaveService 迁移 / ConfigService 合并 / TimeService 偏移,22 断言 + 哨兵防假绿 ✅ 全绿 exit 0
+- [x] 全流程 Demo:`main_menu` 改为演示中枢(进关卡/设置/看广告发奖存档/调试面板 + 金币持久化),`level` 加返回按钮 ✅ 无头验证通过
+- [x] 文档:所有模块文档 `active`,modules 索引齐全;新增 `tools/README.md` ✅
 
 **验收**:检查脚本对故意埋的违规引用能报错;单测全绿可无头运行(CI 就绪);Demo 全流程 10 分钟内可向他人演示。
+
+✅ **M6 已完成并通过无头验证**(2026-07-04):
+- 架构检查器:干净代码 CLEAN(扫 45 文件);故意在 framework 埋 `res://src/game/` 引用 + `change_scene` → 精确报 2 处违规,exit 2
+- 单测:22 断言全绿 exit 0。**踩坑**:`--script` 模式不加载 autoload,凡在文件作用域引用 App 的类(SaveService/ConfigService)会编译失败;改为以主场景 `test_runner.tscn` 启动(autoload 随任意主场景加载),测试只调不碰 App 的纯逻辑方法。哨兵 `_EXPECTED_CHECKS` 防止某测试方法中途抛错被静默跳过而假绿
+- Demo 全流程 12 断言:清档→看广告(Null 模拟)→金币+10→flush→新 SaveService 读盘仍为 10→再看累加到 20→调试面板开关→设置弹窗开+返回键关→关卡往返
+- 至此 M0~M6 全部完成,App 挂齐 log/scenes/ui/time/config/save/platform/net/audio/assets 十项服务
 
 ---
 

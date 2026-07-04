@@ -6,3 +6,4 @@ extends RefCounted
 ## [member UIRegistryEntry.id] 完全一致,否则 UIService 找不到界面。
 
 const SETTINGS: StringName = &"settings"
+const DEBUG: StringName = &"debug"

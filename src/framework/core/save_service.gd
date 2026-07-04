@@ -75,6 +75,17 @@ func set_value(key: String, value: Variant) -> void:
 	_data[key] = value
 
 
+## 清空存档(内存 + 磁盘)。主要供调试面板"清档"用,慎用。返回 flush 的 Result。
+func wipe() -> Result:
+	_data = {}
+	return flush()
+
+
+## 导出当前存档为格式化 JSON 文本(供调试面板查看/反馈附带)。
+func to_json() -> String:
+	return JSON.stringify({"version": CURRENT_VERSION, "data": _data}, "\t")
+
+
 ## 注册迁移链(游戏启动时调用)。[param migrations] 为 {版本N: Callable(data)->data}。
 func set_migrations(migrations: Dictionary) -> void:
 	_migrations = migrations
