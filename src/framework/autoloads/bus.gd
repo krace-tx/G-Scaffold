@@ -32,3 +32,9 @@ signal ui_opened(ui_id: StringName)
 ## 界面已关闭(_on_close 已调用、已从层里移除)。由 [UIService] 发出。
 signal ui_closed(ui_id: StringName)
 #endregion
+
+#region Platform domain
+## 激励视频看完、应发奖。由**业务代码**在拿到 [method AdResult.is_rewarded] 为真时发出
+## ([PlatformService] 只返回结果,不替业务决定发奖)。[param placement] 为广告位标识。
+signal ad_reward_granted(placement: StringName)
+#endregion

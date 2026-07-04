@@ -15,8 +15,8 @@
 |---|---|---|---|---|
 | M0 | 内核四件套:App / Bus / LogService / Bootstrap | 2~3 天 | — | ✅ 已完成 |
 | M1 | SceneService + UIService(场景与 UI 生命周期) | 4~6 天 | M0 | ✅ 已完成 |
-| M2 | SaveService + ConfigService + TimeService(数据层) | 3~4 天 | M0 | ⬜ 未开始 |
-| M3 | 平台防腐层:契约 + Null 全家桶 + Android/iOS 骨架 | 4~6 天 | M0 | ⬜ 未开始 |
+| M2 | SaveService + ConfigService + TimeService(数据层) | 3~4 天 | M0 | ✅ 已完成 |
+| M3 | 平台防腐层:契约 + Null 全家桶 + Android/iOS 骨架 | 4~6 天 | M0 | ✅ 已完成(不含真机联调)|
 | M4 | NetworkService(传输层) | 3~4 天 | M0, M2 | ⬜ 未开始 |
 | M5 | AudioService + AssetService | 3~4 天 | M0 | ⬜ 未开始 |
 | M6 | 质量收口:检查脚本、调试面板、单测、全流程 Demo | 3~5 天 | M1~M5 | ⬜ 未开始 |
@@ -76,25 +76,40 @@
 
 ## M2 数据层(3~4 天)
 
-- [ ] `framework/core/save_service.gd` — 版本化 JSON(见 [ADR-0003](../architecture/decisions/0003-versioned-json-saves.md))、迁移表、`flush()`、损坏档兜底(备份 + 报告)
-- [ ] `framework/core/config_service.gd` — 三层合并:代码默认值 ← 本地缓存 ← 远程覆盖(远程拉取本期留接口,M4 接通)
-- [ ] `framework/core/time_service.gd` — `now()`:服务器时间戳 + `Time.get_ticks_msec()` 偏移;未校时前的降级策略(标记不可信)
-- [ ] Bootstrap 阶段 2 接入:加载存档含迁移,失败阻断重试
-- [ ] 文档:`modules/save-service.md`、`modules/config-service.md`、`modules/time-service.md`
+- [x] `framework/core/save_service.gd` — 版本化 JSON(见 [ADR-0003](../architecture/decisions/0003-versioned-json-saves.md))、迁移链(`_run_migrations` 纯函数)、`flush()`、损坏档备份兜底 ✅ 无头验证通过
+- [x] `framework/core/config_service.gd` — 三层合并 `remote > local > defaults`;`load_local` 本地缓存,`apply_remote` 留给 M4;typed getters ✅ 无头验证通过
+- [x] `framework/core/time_service.gd` — `now()`/`now_msec()`:服务器锚点 + `Time.get_ticks_msec()` 单调推进;未校时降级为系统时钟且 `is_trusted()` 为 false ✅ 无头验证通过
+- [x] Bootstrap 阶段 2 接入:创建 time/config/save,`load_or_create` 含迁移,I/O 失败记 error(应阻断重试);`App` 加 `time/config/save` 字段;切后台 `App._on_app_paused` 已接 `save.flush()` ✅
+- [x] 文档:`modules/save-service.md`、`modules/config-service.md`、`modules/time-service.md`;modules 索引更新 ✅
 
 **验收**:写档 → 改版本号 → 读档触发迁移链,日志可见逐级升级;手工损坏存档文件,启动不崩、走兜底;`App.time.now()` 在未校时/已校时两种状态下行为符合文档。
 
+✅ **M2 已完成并通过无头验证**(2026-07-04,18 项断言全过):
+- 迁移链:`_run_migrations({orig:1}, 1, 3, {...})` 逐级应用 1→2、2→3,保留原字段
+- 存档往返:`set_value` → `flush` → 新实例 `load_or_create` → 字段一致
+- 损坏兜底:写入非法 JSON → `load_or_create` 返回 ok(不崩)+ 空档 + `save.corrupt.<时间戳>.json` 备份生成
+- 配置合并:remote(300) > local(200) > defaults(100) 优先级正确,缺失键返回 fallback
+- 时间:未校时 `is_trusted` false 且 `now` ≈ 系统时钟;`sync_from_server` 后 `is_trusted` true 且 `now` 基于服务器时间
+- 键类型统一用 String(JSON 原生键),避免 StringName/String 字典键静默 miss 的坑
+
 ## M3 平台防腐层(4~6 天,不含真机联调)
 
-- [ ] `platform/ads/ad_provider.gd`(@abstract)+ `ad_result.gd` + `null_ad_provider.gd` + 工厂
-- [ ] `platform/platform_service.gd` — 聚合门面(`App.platform.ads` 等)
-- [ ] Android / iOS 真实现**骨架**(接口占位 + TODO,SDK 接入时填充)
-- [ ] Analytics 契约 + Null 实现(打点先落日志)
-- [ ] Bootstrap 阶段 3 接入:并行初始化 + 5s 超时 + 失败降级为 Null
-- [ ] 文档:`modules/platform-service.md`
+- [x] `platform/platform_provider.gd`(@abstract 共同基类:`initialize()->bool`)+ `platform/ads/ad_provider.gd`(@abstract)+ `ad_result.gd` + `null_ad_provider.gd` + `ad_provider_factory.gd` ✅
+- [x] `platform/platform_service.gd` — 聚合门面(`App.platform.ads` / `.analytics`),Node,挂 App 下 ✅ 无头验证通过
+- [x] Android / iOS 真实现骨架:`admob_android_provider.gd`、`admob_ios_provider.gd`(initialize 返回 false → 自动降级 Null,真机接入前也能跑)✅
+- [x] Analytics 契约 + Null 实现 + 工厂(打点落日志)✅
+- [x] Bootstrap 阶段 3 接入:并行初始化(fire-and-forget 协程 + Array 槽)+ 5s 超时 + 失败/超时降级为 Null;`_run` 已 `await` 阶段 3;`App.platform` 字段;`Bus.ad_reward_granted` 信号 ✅
+- [x] 文档:`modules/platform-service.md`;modules 索引更新 ✅
 
 **验收**:编辑器 F5 走通"请求激励视频 → Null 模拟观看 1s → `Bus.ad_reward_granted`";强制让 provider 初始化抛错,游戏照常启动且广告入口降级可用。
 **注**:真机 SDK 联调(AdMob 等)单独排期,预估每个 SDK 2~4 天,不阻塞后续里程碑。
+
+✅ **M3 已完成并通过无头验证**(2026-07-04,11 项断言全过,不含真机联调):
+- 编辑器下 `App.platform.ads` 为 `NullAdProvider`、analytics 为 `NullAnalyticsProvider`
+- 发奖流程:`show_rewarded(&"double_coins")` → Null 模拟观看 1s → `is_rewarded()` → 业务 emit `Bus.ad_reward_granted` → 监听方收到
+- **降级路径**:强制 `initialize()` 返回 false 的 provider 经 `_init_or_downgrade` 被换成 Null,且降级后 `show_rewarded` 照常发奖
+- `AdResult` 值对象语义(rewarded/dismissed/failed+message)正确;`analytics.track` 落日志不崩
+- `@abstract` 契约(class + method)在 Godot 4.6.1 编译通过;`AdResult.Status` 自引用枚举已全限定避免级联幻象报错(M1 学到的坑)
 
 ## M4 NetworkService(3~4 天)
 

@@ -11,10 +11,10 @@
 | SceneService | [scene-service.md](scene-service.md) | active(M1 已实现) |
 | UIService | [ui-service.md](ui-service.md) | active(M1 已实现) |
 | LogService | [log-service.md](log-service.md) | active(M0 已实现) |
-| TimeService | — | 规划中 |
-| ConfigService | — | 规划中 |
-| SaveService | — | 规划中 |
+| TimeService | [time-service.md](time-service.md) | active(M2 已实现) |
+| ConfigService | [config-service.md](config-service.md) | active(M2 已实现) |
+| SaveService | [save-service.md](save-service.md) | active(M2 已实现) |
 | NetworkService | — | 规划中 |
 | AssetService | — | 规划中 |
 | AudioService | — | 规划中 |
-| PlatformService(ads/android/ios) | — | 规划中 |
+| PlatformService(ads/analytics) | [platform-service.md](platform-service.md) | active(M3 已实现) |

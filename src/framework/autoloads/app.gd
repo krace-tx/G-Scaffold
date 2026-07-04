@@ -20,6 +20,12 @@ var log: LogService   ## M0:由 Bootstrap 阶段 1 最先创建
 
 var scenes: SceneService   ## M1:由 Bootstrap 创建并挂到 App 下(见 bootstrap.gd)
 var ui: UIService          ## M1:由 Bootstrap 创建并挂到 App 下
+
+var time: TimeService      ## M2:权威时间源(未校时前不可信)
+var config: ConfigService  ## M2:三层合并配置(remote > local > defaults)
+var save: SaveService      ## M2:版本化 JSON 存档
+
+var platform: PlatformService  ## M3:平台能力门面(App.platform.ads / .analytics)
 #endregion
 
 #region Lifecycle
@@ -36,7 +42,8 @@ func _notification(what: int) -> void:
 #region Internal
 func _on_app_paused() -> void:
 	if log: log.info("app", "application paused")
-	# TODO(M2): App.save.flush() —— iOS 上唯一可靠的保存时机。
+	# 切后台是 iOS 上唯一可靠的保存时机,务必 flush 存档。
+	if save: save.flush()
 	Bus.app_paused.emit()
 
 

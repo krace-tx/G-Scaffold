@@ -17,7 +17,7 @@ func _run() -> void:
 	_phase_1_log()
 	_init_ui_and_scene_services()
 	_phase_2_local_config_and_save()
-	_phase_3_platform_sdks()
+	await _phase_3_platform_sdks()   # 异步:并行初始化 provider,await 到全部就绪/降级
 	_phase_4_remote_config()
 	_phase_5_asset_preload()
 	_phase_6_enter_main_menu()
@@ -44,14 +44,30 @@ func _init_ui_and_scene_services() -> void:
 	App.log.info("boot", "scene & ui services ready")
 
 
-## 阶段 2:本地配置 + 存档加载(含版本迁移)。失败策略:阻断,弹重试对话框。
+## 阶段 2:时间源 + 本地配置 + 存档加载(含版本迁移)。失败策略:存档 I/O 失败
+## 阻断并应弹重试对话框(占位阶段先记录 error,不真的阻断演示)。
 func _phase_2_local_config_and_save() -> void:
-	App.log.info("boot", "phase 2/6: local config & save — skipped (see M2)")
+	App.time = TimeService.new()
+
+	App.config = ConfigService.new()
+	App.config.load_local()
+
+	App.save = SaveService.new()
+	var res := App.save.load_or_create()
+	if res.is_err():
+		# 真实项目在此弹重试对话框(阻断);见 boot-sequence.md 阶段 2 失败策略。
+		App.log.error("boot", "save load failed (would block+retry): %s" % res.error)
+
+	App.log.info("boot", "phase 2/6: time, config & save ready")
 
 
-## 阶段 3:平台 SDK 初始化(并行,5s 超时)。失败策略:降级为 Null 实现。
+## 阶段 3:平台 SDK 初始化(并行,5s 超时)。失败策略:降级为 Null 实现,游戏照常可玩。
 func _phase_3_platform_sdks() -> void:
-	App.log.info("boot", "phase 3/6: platform sdks — skipped (see M3)")
+	var platform := PlatformService.new()
+	App.add_child(platform)   # Node,需在树上才能用 get_tree() 做超时轮询
+	App.platform = platform
+	await platform.setup()
+	App.log.info("boot", "phase 3/6: platform sdks ready")
 
 
 ## 阶段 4:远程配置拉取(3s 超时)。失败策略:降级为本地缓存/默认值。
