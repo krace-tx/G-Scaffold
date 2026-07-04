@@ -13,7 +13,7 @@
 
 | 里程碑 | 内容 | 预估 | 前置 | 状态 |
 |---|---|---|---|---|
-| M0 | 内核四件套:App / Bus / LogService / Bootstrap | 2~3 天 | — | ⬜ 未开始 |
+| M0 | 内核四件套:App / Bus / LogService / Bootstrap | 2~3 天 | — | ✅ 已完成 |
 | M1 | SceneService + UIService(场景与 UI 生命周期) | 4~6 天 | M0 | ⬜ 未开始 |
 | M2 | SaveService + ConfigService + TimeService(数据层) | 3~4 天 | M0 | ⬜ 未开始 |
 | M3 | 平台防腐层:契约 + Null 全家桶 + Android/iOS 骨架 | 4~6 天 | M0 | ⬜ 未开始 |
@@ -33,13 +33,18 @@
 
 - [x] `framework/core/result.gd` — `Result` 类型(`ok/err`、`value/error`),全项目错误处理的统一载体 ✅ 无头验证通过
 - [x] `framework/core/log_service.gd` — tag + 级别(debug/info/warn/error)、环形缓冲、可导出日志文本 ✅ 无头验证通过
-- [ ] `framework/autoloads/bus.gd` — 按领域分组的初始信号集(`app_paused`、`app_resumed`、`scene_changed` 等,过去式)
-- [ ] `framework/autoloads/app.gd` — 全部服务的类型化字段(先声明,逐里程碑赋值);`_notification` 接管切后台/返回键并转发 Bus 事件
-- [ ] `framework/core/bootstrap.gd` + `game/scenes/boot.tscn` — 阶段管线骨架(6 阶段,未实现的阶段打日志跳过)
-- [ ] `project.godot`:注册 App / Bus 两个 Autoload,主场景设为 `boot.tscn`,开启 `untyped_declaration = error` 警告
-- [ ] 文档:`modules/log-service.md`
+- [x] `framework/autoloads/bus.gd` — App 领域初始信号(`app_paused`/`app_resumed`,过去式);`scene_changed` 等其他领域信号留到对应里程碑落地时再加(YAGNI) ✅ 无头验证通过
+- [x] `framework/autoloads/app.gd` — `log: LogService` 类型化字段(其余服务字段随 M1~M5 各自补充);`_notification` 接管切后台/恢复并转发 Bus 事件 ✅ 无头验证通过
+- [x] `framework/core/bootstrap.gd` + `game/scenes/boot.tscn` + `game/scenes/main_menu.tscn`(占位) — 阶段管线骨架(6 阶段,未实现的阶段打日志跳过)✅ 无头验证通过
+- [x] `project.godot`:注册 App / Bus 两个 Autoload,主场景设为 `boot.tscn`,开启 `untyped_declaration = error` 警告 ✅
+- [x] 文档:`modules/log-service.md` ✅
 
 **验收(DoD)**:F5 启动,控制台按序输出各阶段日志,最终切到一个占位主菜单场景;切后台/恢复(编辑器内用窗口失焦模拟)能看到对应 Bus 事件日志;无任何脚本报错。
+
+✅ **M0 已完成并通过无头验证**(2026-07-04):
+- 6 阶段日志按序输出,末尾场景切换到 `MainMenu`(已核实 `get_tree().current_scene.name == "MainMenu"`)
+- `NOTIFICATION_APPLICATION_PAUSED/RESUMED` → `App._notification` → `Bus.app_paused`/`Bus.app_resumed` 双向验证通过
+- 踩坑记录:`change_scene_to_file` 不能在 Boot 根节点自己的 `_ready()` 同帧调用(树还在处理"添加子节点",会报 `remove_child` 忙碌错误),改用 `get_tree().change_scene_to_file.call_deferred(...)` 解决,见 [bootstrap.gd](../../src/framework/core/bootstrap.gd) 内注释
 
 ## M1 场景与 UI 生命周期(4~6 天)
 

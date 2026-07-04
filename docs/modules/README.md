@@ -10,7 +10,7 @@
 |---|---|---|
 | SceneService | [scene-service.md](scene-service.md) | draft(示例,代码未实现) |
 | UIService | — | 规划中 |
-| LogService | — | 规划中 |
+| LogService | [log-service.md](log-service.md) | active(M0 已实现) |
 | TimeService | — | 规划中 |
 | ConfigService | — | 规划中 |
 | SaveService | — | 规划中 |
