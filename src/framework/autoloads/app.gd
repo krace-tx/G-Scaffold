@@ -17,6 +17,8 @@ extends Node
 ## `App.log` 这个命名在全项目统一且更常用,不会被误认成数学函数。
 @warning_ignore("shadowed_global_identifier")
 var log: LogService   ## M0:由 Bootstrap 阶段 1 最先创建
+
+var scenes: SceneService   ## M1:由 Bootstrap 创建并挂到 App 下(见 bootstrap.gd)
 #endregion
 
 #region Lifecycle

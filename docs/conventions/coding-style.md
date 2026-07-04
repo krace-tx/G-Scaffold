@@ -246,6 +246,32 @@ func post(path: String, body: Dictionary) -> Result:
 - 每个 `await` 点都要想:等待期间对象可能已被释放(`is_instance_valid` 保护)或场景已切换
 - 会挂起的方法,文档注释**必须**注明"该方法为异步"(见规则 9)
 
+### 11. lambda 闭包捕获局部变量是按值快照,不是按引用
+
+用 fire-and-forget 的匿名函数配合"完成标记"做超时竞速(常见于给某个 `await` 操作加超时保护)时,**不要用 bool/int 等值类型**做跨闭包的可变状态——lambda 捕获到的是创建那一刻的快照,内部赋值不会反映到外层作用域,外层的判断条件永远看不到变化,轻则逻辑失效,重则协程空转到你设的超时上限才罢休(在无头测试里会表现为进程假死 + `ObjectDB instances leaked at exit`,非常难查)。
+
+```gdscript
+# ❌ finished 是 bool,lambda 内部的赋值只改了闭包自己的快照
+var finished := false
+(func() -> void:
+	await do_something_async()
+	finished = true
+).call()
+while not finished:   # 永远是 false,直到外部超时兜底(如果有的话)
+	await get_tree().process_frame
+
+# ✅ 用单元素 Array(引用类型),lambda 与外层共享同一份底层数据
+var finished := [false]
+(func() -> void:
+	await do_something_async()
+	finished[0] = true
+).call()
+while not finished[0]:
+	await get_tree().process_frame
+```
+
+真实案例见 [scene_service.gd](../../src/framework/managers/scene_service.gd) 的 `_run_on_enter`——这个坑当时让 `_on_enter` 超时保护在 headless 测试里空转到 10 秒才暴露。
+
 ---
 
 ## 五、Code Review 速查清单

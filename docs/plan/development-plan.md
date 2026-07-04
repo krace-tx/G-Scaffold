@@ -44,13 +44,20 @@
 ✅ **M0 已完成并通过无头验证**(2026-07-04):
 - 6 阶段日志按序输出,末尾场景切换到 `MainMenu`(已核实 `get_tree().current_scene.name == "MainMenu"`)
 - `NOTIFICATION_APPLICATION_PAUSED/RESUMED` → `App._notification` → `Bus.app_paused`/`Bus.app_resumed` 双向验证通过
-- 踩坑记录:`change_scene_to_file` 不能在 Boot 根节点自己的 `_ready()` 同帧调用(树还在处理"添加子节点",会报 `remove_child` 忙碌错误),改用 `get_tree().change_scene_to_file.call_deferred(...)` 解决,见 [bootstrap.gd](../../src/framework/core/bootstrap.gd) 内注释
+- 踩坑记录:`change_scene_to_file` 不能在 Boot 根节点自己的 `_ready()` 同帧调用(树还在处理"添加子节点",会报 `remove_child` 忙碌错误)。当时用 `call_deferred` 解决;M1 落地 SceneService 后,`replace()` 内部先 `await` 转场淡出,真正切场景时已经过了好几帧,这个坑自然消失,`call_deferred` 已从 bootstrap.gd 移除
 
 ## M1 场景与 UI 生命周期(4~6 天)
 
-- [ ] `framework/managers/base_scene.gd` — `_on_enter(params)/_on_exit()` 异步契约
-- [ ] `framework/managers/scene_service.gd` — 按 [modules/scene-service.md](../modules/scene-service.md) 规格实现:`replace` + `load_threaded` 异步加载 + 转场遮罩 + 10s 超时保护 + 排队防并发
-- [ ] `resource/scripts/scene_registry_entry.gd` + `resource/data/scene_registry.tres` + `SceneIds` 常量类
+- [x] `framework/managers/base_scene.gd` — `_on_enter(params)/_on_exit()` 异步契约 ✅ 无头验证通过
+- [x] `framework/managers/scene_service.gd` — 按 [modules/scene-service.md](../modules/scene-service.md) 规格实现:`replace` + `load_threaded` 异步加载 + 转场遮罩 + 10s 超时保护 + 排队防并发 ✅ 无头验证通过(含失败路径与并发排队压测)
+- [x] `resource/scripts/scene_registry_entry.gd` + `resource/scripts/scene_registry.gd` + `resource/data/scene_registry.tres` + `SceneIds` 常量类 ✅ 无头验证通过
+✅ **前 3 项已完成并通过无头验证**(2026-07-04):
+- 完整链路走通:Bootstrap 阶段 6 → `App.scenes.replace(SceneIds.MAIN_MENU)` → 注册表查路径 → `load_threaded` 异步加载 → 转场淡出/淡入 → `change_scene_to_packed` → `MainMenu._on_enter` → `Bus.scene_changed`
+- 失败路径验证:未知场景 id → `App.log.error` + `Bus.scene_change_failed`,停留在当前场景,不留黑屏
+- 排队防并发验证:连续 3 次 `replace()` 不等待地调用,`_is_switching` 立即置真,4 次(含首次)`scene_changed` 按顺序逐一触发,队列最终清空,无并发/丢失
+- 命名冲突:`SceneRegistry.get_path()` 与 `Resource` 内置的 `get_path()`(返回资源自身磁盘路径)签名不兼容,GDScript 视为非法覆写、直接报编译错误(不是简单警告,`@warning_ignore` 无法压下),改名为 `resolve_path` 解决
+- **重要踩坑**:GDScript 的 lambda 闭包捕获局部变量是**按值快照**,不是按引用。`_run_on_enter` 最初用一个 `bool finished` 变量在 fire-and-forget lambda 内部置真等待完成,结果外层循环永远看不到这个变化,导致协程空转到 10 秒超时——headless 测试中因为提前 `quit()` 而表现为进程挂起 + `ObjectDB instances leaked at exit`。修复:改用单元素 `Array`(引用类型)做可变完成标记。这个坑具有普遍性,后续任何"fire-and-forget + 完成标记"模式都要避免用 bool/int 等值类型做跨闭包共享状态,已记入 [scene_service.gd](../../src/framework/managers/scene_service.gd) 内联注释
+
 - [ ] `framework/managers/base_ui.gd` — `_on_open/_on_close/_on_back` 契约
 - [ ] `framework/managers/ui_service.gd` — 分层 CanvasLayer(HUD/Window/Popup/Toast/Loading/Debug)、每层栈、`open/close/handle_back`、KEEP/DESTROY 缓存策略
 - [ ] `resource/data/ui_registry.tres` + `UIIds` 常量类

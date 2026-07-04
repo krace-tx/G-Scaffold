@@ -16,3 +16,11 @@ signal app_paused
 ## 应用从后台恢复(NOTIFICATION_APPLICATION_RESUMED)。由 [App] 转发。
 signal app_resumed
 #endregion
+
+#region Scene domain
+## 顶层场景切换完成(新场景 _on_enter 已跑完)。由 [SceneService] 发出。
+signal scene_changed(scene_id: StringName)
+
+## 顶层场景切换失败(id 不存在 / 加载失败)。由 [SceneService] 发出。
+signal scene_change_failed(scene_id: StringName)
+#endregion
