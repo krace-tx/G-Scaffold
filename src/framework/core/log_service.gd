@@ -10,17 +10,21 @@ extends RefCounted
 ## DEBUG/INFO 走 print;WARN 走 push_warning;ERROR 走 push_error
 ## (后两者会同时出现在 Godot 调试器的错误面板中)。
 
+#region Constants & Enums
 enum Level { DEBUG, INFO, WARN, ERROR }
 
 const _LEVEL_TAGS: Array[String] = ["D", "I", "W", "E"]
 const _MAX_ENTRIES: int = 500   ## 环形缓冲容量,超出丢弃最旧一条
+#endregion
 
+#region Exports & State
 ## 低于此级别的日志被过滤,不记录也不输出。发布包可调为 WARN。
 var min_level: Level = Level.DEBUG
 
 var _entries: PackedStringArray = PackedStringArray()
+#endregion
 
-
+#region Public API
 func debug(tag: String, msg: String) -> void:
 	_log(Level.DEBUG, tag, msg)
 
@@ -45,8 +49,9 @@ func dump() -> String:
 ## 清空缓冲。
 func clear() -> void:
 	_entries.clear()
+#endregion
 
-
+#region Internal
 func _log(level: Level, tag: String, msg: String) -> void:
 	if level < min_level:
 		return
@@ -61,3 +66,4 @@ func _log(level: Level, tag: String, msg: String) -> void:
 			push_error(line)
 		_:
 			print(line)
+#endregion
