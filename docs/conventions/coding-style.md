@@ -176,6 +176,19 @@ static func ok(p_value: Variant = null) -> Result:
 	return r
 ```
 
+### 4.1 遮蔽内置全局标识符:@warning_ignore + 注释说明
+
+成员名与 GDScript 内置全局函数/常量同名(如 `log`、`name`、`error` 前缀冲突等)时,**优先换名**;只有当这个名字本身就是项目统一约定(如 `App.log` 已是全项目认知)、换名反而降低可读性时,才保留原名,并用 `@warning_ignore` 精确忽略,附一行注释说明"为什么故意遮蔽、不会误用":
+
+```gdscript
+## `log` 与内置全局函数 log()(自然对数)同名,此处刻意遮蔽:
+## `App.log` 这个命名在全项目统一且更常用,不会被误认成数学函数。
+@warning_ignore("shadowed_global_identifier")
+var log: LogService
+```
+
+禁止为图省事把整类警告在项目设置里全局关掉——只在真正冲突的那一行局部忽略。
+
 ### 5. 错误处理:Result 风格
 
 GDScript 没有异常。所有可失败操作返回 `Result` 或明确文档化的哨兵值,**禁止静默吞错**。

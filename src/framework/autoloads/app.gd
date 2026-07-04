@@ -13,6 +13,9 @@ extends Node
 ## 详见 docs/architecture/boot-sequence.md 应用生命周期一节。
 
 #region Exports & State
+## `log` 与内置全局函数 log()(自然对数)同名,此处刻意遮蔽:
+## `App.log` 这个命名在全项目统一且更常用,不会被误认成数学函数。
+@warning_ignore("shadowed_global_identifier")
 var log: LogService   ## M0:由 Bootstrap 阶段 1 最先创建
 #endregion
 
