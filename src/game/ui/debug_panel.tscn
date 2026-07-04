@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://d3b8g1v6k2mnp"]
+[gd_scene format=3 uid="uid://d3b8g1v6k2mnp"]
 
 [ext_resource type="Script" path="res://src/game/ui/debug_panel.gd" id="1_debug"]
 

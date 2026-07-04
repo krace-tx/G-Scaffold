@@ -21,13 +21,20 @@ func dump() -> String                          # 导出全部缓冲日志为纯�
 func clear() -> void                           # 清空缓冲
 ```
 
+## 行格式
+
+每行:`[时间戳] [级别] [tag] 消息`,例如
+`[2026-07-04 23:37:51.851] [INFO] [boot] phase 1/6: log service ready`。
+时间戳为系统本地时间 `YYYY-MM-DD HH:MM:SS.mmm`(毫秒便于排序快速事件),经
+`TimeUtils.now_string()` 生成——走系统墙钟而非 `App.time`,因为日志早于 M4 校时就要能用。缓冲与 `dump()` 导出都带时间戳。
+
 ## Bus 事件
 
 无。LogService 不发送也不监听 Bus 事件——纯粹的被动服务。
 
 ## 依赖
 
-- 依赖:无(`RefCounted`,不依赖场景树或其他服务)
+- 依赖:仅 `TimeUtils.now_string()`(纯静态时间格式化,无场景树/App 依赖),用于行时间戳
 - 初始化时机:Bootstrap 阶段 1(见 [boot-sequence.md](../architecture/boot-sequence.md)),赋值给 `App.log`,必须在所有其他阶段之前完成
 
 ## 持有的数据

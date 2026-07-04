@@ -34,19 +34,19 @@ func _phase_1_log() -> void:
 ## 这样它们才能在 phase 6 把 Boot 场景整个替换掉之后继续存活。
 func _init_tree_services() -> void:
 	var scene_service := SceneService.new()
-	App.add_child(scene_service)
+	_mount_service(scene_service, "SceneService")
 	App.scenes = scene_service
 
 	var ui_service := UIService.new()
-	App.add_child(ui_service)
+	_mount_service(ui_service, "UIService")
 	App.ui = ui_service
 
 	var asset_service := AssetService.new()
-	App.add_child(asset_service)
+	_mount_service(asset_service, "AssetService")
 	App.assets = asset_service
 
 	var audio_service := AudioService.new()
-	App.add_child(audio_service)
+	_mount_service(audio_service, "AudioService")
 	App.audio = audio_service
 
 	App.log.info("boot", "scene, ui, asset & audio services ready")
@@ -72,7 +72,7 @@ func _phase_2_local_config_and_save() -> void:
 ## 阶段 3:平台 SDK 初始化(并行,5s 超时)。失败策略:降级为 Null 实现,游戏照常可玩。
 func _phase_3_platform_sdks() -> void:
 	var platform := PlatformService.new()
-	App.add_child(platform)   # Node,需在树上才能用 get_tree() 做超时轮询
+	_mount_service(platform, "PlatformService")   # Node,需在树上才能用 get_tree() 做超时轮询
 	App.platform = platform
 	await platform.setup()
 	App.log.info("boot", "phase 3/6: platform sdks ready")
@@ -85,7 +85,7 @@ func _phase_3_platform_sdks() -> void:
 ## 真实项目接入后端后,把下面的 enable_mock 换成 App.net.configure(base_url, token)。
 func _phase_4_remote_config() -> void:
 	App.net = NetworkService.new()
-	App.add_child(App.net)
+	_mount_service(App.net, "NetworkService")
 	App.net.enable_mock(_demo_mock_responses())
 
 	var res := await App.net.login_and_sync()
@@ -109,6 +109,15 @@ func _phase_5_asset_preload() -> void:
 func _phase_6_enter_main_menu() -> void:
 	App.log.info("boot", "phase 6/6: entering main menu")
 	App.scenes.replace(SceneIds.MAIN_MENU)
+
+
+## 把一个常驻服务节点挂到 App 下,并按 [param node_name] 命名(让调试场景树可读:
+## App/SceneService 而不是 App/@Node@2)。经 NodeUtils.mount 走统一守卫。
+## 启动期这里结构上不该失败;真失败了即接线 bug,push_error 大声报出、绝不吞。
+func _mount_service(node: Node, node_name: String) -> void:
+	var res := NodeUtils.mount(node, App, node_name)
+	if res.is_err():
+		push_error("boot: mount %s failed — %s" % [node_name, res.error])
 
 
 ## 框架自带的演示用 Mock 应答表(path → 响应体),仅用于让 Bootstrap 在没有真实

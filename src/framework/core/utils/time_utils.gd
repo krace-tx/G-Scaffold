@@ -13,6 +13,16 @@ const MS_PER_SECOND: int = 1000
 #endregion
 
 #region Public API
+## 返回当前**本地**日期时间字符串，格式 [code]YYYY-MM-DD HH:MM:SS.mmm[/code]（含毫秒）。[br]
+## 用于日志时间戳等墙钟场景，走系统时钟——不是游戏权威时间（那是 [TimeService]，
+## 且日志早于校时就要能用），故有意用系统时钟而非 App.time。
+static func now_string() -> String:
+	# 本地时间到秒 + 单独取毫秒:毫秒(秒内小数)与时区无关，可安全拼到本地时间串后。
+	var datetime := Time.get_datetime_string_from_system(false, true)
+	var ms := int(Time.get_unix_time_from_system() * MS_PER_SECOND) % MS_PER_SECOND
+	return "%s.%03d" % [datetime, ms]
+
+
 ## 将秒数格式化为 MM:SS 字符串（例如 03:05）。[br]
 ## 常用于倒计时或局内游戏时间显示。
 static func format_mm_ss(total_seconds: int) -> String:

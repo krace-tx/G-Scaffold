@@ -9,6 +9,9 @@ extends RefCounted
 ##
 ## DEBUG/INFO 走 print;WARN 走 push_warning;ERROR 走 push_error
 ## (后两者会同时出现在 Godot 调试器的错误面板中)。
+##
+## 每行格式:[code][时间戳] [级别] [tag] 消息[/code],时间戳为系统本地时间
+## [code]YYYY-MM-DD HH:MM:SS.mmm[/code](见 [method TimeUtils.now_string])。
 
 enum Level { DEBUG, INFO, WARN, ERROR }
 
@@ -50,7 +53,8 @@ func clear() -> void:
 func _log(level: LogService.Level, tag: String, msg: String) -> void:
 	if level < min_level:
 		return
-	var line := "[%s] [%s] %s" % [_LEVEL_TAGS[level], tag, msg]
+	# 时间戳走 TimeUtils(系统墙钟),同时进缓冲,dump() 导出也带时间。
+	var line := "[%s] [%s] [%s] %s" % [TimeUtils.now_string(), _LEVEL_TAGS[level], tag, msg]
 	_entries.append(line)
 	if _entries.size() > _MAX_ENTRIES:
 		_entries.remove_at(0)
