@@ -33,7 +33,7 @@ func handle_back() -> bool                                        # 返回键路
 func is_open(ui_id: StringName) -> bool                           # 是否打开中
 ```
 
-界面 id → 场景路径/层级/缓存策略的映射在 `resource/data/ui_registry.tres`,代码里用 `UIIds.XXX` 常量引用,注册表路径经 `ResPaths.UI_REGISTRY`。
+界面在 `resource/data/ui_registry.tres` 登记(Inspector 里拖 .tscn + 选层级/缓存策略,id 默认取文件名,可用 id_override 覆盖),生成的 `Uis` 常量类供代码引用(`Uis.XXX`,见 src/resource/generated/)。运行时不 load 该 .tres,查表走生成类。
 
 ## 界面契约
 

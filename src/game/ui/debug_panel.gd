@@ -3,7 +3,7 @@ extends BaseUI
 
 ## 调试面板(Debug 层):FPS/内存、场景跳转、存档清除/导出、Bus 事件监视。
 ##
-## 仅开发期使用,通过 App.ui.open(UIIds.DEBUG) 打开(游戏可自行绑定热键如 F3)。
+## 仅开发期使用,通过 App.ui.open(Uis.DEBUG) 打开(游戏可自行绑定热键如 F3)。
 ## UI 全程用代码构建(占位工具面板不值得单独维护 .tscn)。KEEP 缓存,反复开关不重建。
 
 #region Constants & Enums
@@ -75,12 +75,12 @@ func _build_ui() -> void:
 	_stats_label = Label.new()
 	NodeUtils.mount_required(_stats_label, vbox, "StatsLabel")
 
-	_add_button(vbox, "MainMenuButton", "→ Main Menu", func() -> void: App.scenes.replace(SceneIds.MAIN_MENU))
-	_add_button(vbox, "LevelButton", "→ Level", func() -> void: App.scenes.replace(SceneIds.LEVEL))
+	_add_button(vbox, "MainMenuButton", "→ Main Menu", func() -> void: App.scenes.replace(Scenes.MAIN_MENU))
+	_add_button(vbox, "LevelButton", "→ Level", func() -> void: App.scenes.replace(Scenes.LEVEL))
 	_add_button(vbox, "ClearSaveButton", "Clear Save", func() -> void: _clear_save())
 	_add_button(vbox, "DumpSaveButton", "Dump Save → log", func() -> void: App.log.info("debug", App.save.to_json()))
 	_add_button(vbox, "DumpLogsButton", "Dump Logs → stdout", func() -> void: print(App.log.dump()))
-	_add_button(vbox, "CloseButton", "Close", func() -> void: App.ui.close(UIIds.DEBUG))
+	_add_button(vbox, "CloseButton", "Close", func() -> void: App.ui.close(Uis.DEBUG))
 
 	_monitor_label = Label.new()
 	NodeUtils.mount_required(_monitor_label, vbox, "MonitorLabel")

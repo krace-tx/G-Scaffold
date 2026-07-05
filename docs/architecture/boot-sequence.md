@@ -29,7 +29,7 @@ func run() -> void:
     await _phase(_init_platform_sdks, 5.0)         # 失败 → Null 降级
     await _phase(_fetch_remote_config, 3.0)        # 失败 → 本地缓存
     await _phase(_preload_core_assets)
-    App.scenes.replace(SceneIds.MAIN_MENU)
+    App.scenes.replace(Scenes.MAIN_MENU)
 ```
 
 ## 应用生命周期(切后台/返回键)

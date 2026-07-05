@@ -108,7 +108,7 @@ func _phase_5_asset_preload() -> void:
 ## _ready 调用链尚未走完、树还在忙着添加子节点"这个坑,不需要 call_deferred。
 func _phase_6_enter_main_menu() -> void:
 	App.log.info("boot", "phase 6/6: entering main menu")
-	App.scenes.replace(SceneIds.MAIN_MENU)
+	App.scenes.replace(Scenes.MAIN_MENU)
 
 
 ## 把一个常驻服务节点挂到 App 下,并按 [param node_name] 命名(让调试场景树可读:

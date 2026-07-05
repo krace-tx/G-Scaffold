@@ -1,32 +1,15 @@
 class_name SceneRegistry
 extends Resource
 
-## 场景 id → 路径的注册表,数据实例为 res://src/resource/data/scene_registry.tres。
+## 场景注册表(唯一权威数据源),数据实例为 res://src/resource/data/scene_registry.tres。
 ##
-## SceneService 只认 [member entries] 里登记过的 id,新增场景时改这份 .tres
-## (在编辑器 Inspector 里增删 [SceneRegistryEntry]),不改代码。
+## 新增场景:在编辑器 Inspector 里给 [member entries] 加一条 [SceneRegistryEntry],
+## 把 .tscn 拖进去,然后跑一次生成器得到 [Scenes] 常量类(见 tools/registry_codegen.gd)。
+##
+## [b]运行时不得 load 本资源[/b]——条目直接引用 PackedScene,加载本表会把所有
+## 场景同步拉进内存。运行时查表一律走生成的 [Scenes](src/resource/generated/),
+## 那边只存 uid/路径字符串,SceneService 才能按需异步加载。
 
 #region Exports & State
 @export var entries: Array[SceneRegistryEntry] = []
-#endregion
-
-#region Public API
-## 查找 [param id] 对应的场景路径,不存在时返回空字符串。
-##
-## 命名为 resolve_path 而不是 get_path——Resource 自带一个签名不同的内置
-## get_path()(返回这个 .tres 资源文件自身的磁盘路径),撞名会被 GDScript
-## 判定为签名不匹配的覆写,必须换名,不是简单加 @warning_ignore 能解决的。
-func resolve_path(id: StringName) -> String:
-	for entry in entries:
-		if entry.id == id:
-			return entry.scene_path
-	return ""
-
-
-## 查找 [param id] 对应的完整记录(需要 asset_group 等字段时用),不存在返回 null。
-func find(id: StringName) -> SceneRegistryEntry:
-	for entry in entries:
-		if entry.id == id:
-			return entry
-	return null
 #endregion

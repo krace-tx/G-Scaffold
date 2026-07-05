@@ -39,10 +39,10 @@ func _build_ui() -> void:
 	_coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	NodeUtils.mount_required(_coins_label, vbox, "CoinsLabel")
 
-	_add_button(vbox, "EnterLevelButton", "Enter Level", func() -> void: App.scenes.replace(SceneIds.LEVEL))
-	_add_button(vbox, "SettingsButton", "Settings", func() -> void: App.ui.open(UIIds.SETTINGS))
+	_add_button(vbox, "EnterLevelButton", "Enter Level", func() -> void: App.scenes.replace(Scenes.LEVEL))
+	_add_button(vbox, "SettingsButton", "Settings", func() -> void: App.ui.open(Uis.SETTINGS))
 	_add_button(vbox, "WatchAdButton", "Watch Ad (+%d coins)" % _AD_REWARD, _on_watch_ad)
-	_add_button(vbox, "DebugPanelButton", "Debug Panel", func() -> void: App.ui.open(UIIds.DEBUG))
+	_add_button(vbox, "DebugPanelButton", "Debug Panel", func() -> void: App.ui.open(Uis.DEBUG))
 
 
 func _add_button(parent: Node, node_name: String, text: String, on_press: Callable) -> void:

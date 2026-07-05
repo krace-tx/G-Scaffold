@@ -10,11 +10,12 @@ extends Node
 ## 为什么不用 --script:那种模式不加载 autoload,凡在文件作用域引用 App 的类会
 ## 直接编译失败(标识符 App 未定义),导致 SaveService/ConfigService 整个不可用。
 ##
-## 覆盖:Result、SaveService 迁移、ConfigService 合并、TimeService 偏移。
+## 覆盖:Result、SaveService 迁移、ConfigService 合并、TimeService 偏移、
+## 生成注册表(Scenes/Uis/Assets 的加载键可解析、分组接线)。
 
 ## 期望执行的断言总数。实际执行数对不上说明有测试方法中途抛错被跳过(GDScript
 ## 无 try/catch,靠这个哨兵把"静默跳过"暴露成失败,避免假绿)。
-const _EXPECTED_CHECKS: int = 22
+const _EXPECTED_CHECKS: int = 26
 
 var _failed: int = 0
 var _ran: int = 0
@@ -24,6 +25,7 @@ func _ready() -> void:
 	_test_save_migrations()
 	_test_config_merge()
 	_test_time_service()
+	_test_generated_registries()
 
 	if _ran != _EXPECTED_CHECKS:
 		print("  FAIL sentinel: ran %d checks, expected %d (a test method threw?)" % [_ran, _EXPECTED_CHECKS])
@@ -88,6 +90,23 @@ func _test_time_service() -> void:
 	t.sync_from_server(4_000_000_000 * 1000)
 	_check("trusted after sync", t.is_trusted())
 	_check("now uses server anchor", t.now() >= 4_000_000_000)
+
+
+## 生成的注册表常量类与磁盘资源的一致性:每个登记 id 的加载键(uid://)都必须
+## 能被 ResourceLoader 解析——删了场景/资产但没重新生成时,这里最先红。
+func _test_generated_registries() -> void:
+	print("[Generated registries]")
+	_check("scenes table resolves", _registry_paths_exist(Scenes))
+	_check("uis table resolves", _registry_paths_exist(Uis))
+	_check("assets table resolves", _registry_paths_exist(Assets))
+	_check("level scene asset group wired", not Assets.ids_in_group(Scenes.asset_group(Scenes.LEVEL)).is_empty())
+
+
+func _registry_paths_exist(registry: Variant) -> bool:
+	for id: StringName in registry.ids():
+		if not ResourceLoader.exists(String(registry.load_path(id))):
+			return false
+	return true
 
 
 func _check(name: String, cond: bool) -> void:

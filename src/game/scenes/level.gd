@@ -20,6 +20,6 @@ func _build_back_button() -> void:
 	b.text = "← Back to Menu"
 	b.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	b.position = Vector2(16, 16)
-	b.pressed.connect(func() -> void: App.scenes.replace(SceneIds.MAIN_MENU))
+	b.pressed.connect(func() -> void: App.scenes.replace(Scenes.MAIN_MENU))
 	NodeUtils.mount_required(b, self, "BackButton")
 #endregion

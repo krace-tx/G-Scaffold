@@ -159,6 +159,15 @@
 - Demo 全流程 12 断言:清档→看广告(Null 模拟)→金币+10→flush→新 SaveService 读盘仍为 10→再看累加到 20→调试面板开关→设置弹窗开+返回键关→关卡往返
 - 至此 M0~M6 全部完成,App 挂齐 log/scenes/ui/time/config/save/platform/net/audio/assets 十项服务
 
+## M7 注册表代码生成(半天)
+
+- [x] 三份注册表 .tres 改为**直接拖资源引用**(PackedScene/Resource,UID 追踪抗改名移动),id 默认取文件名 + `id_override` 兜底(asset_map 同文件多组、ui 短名都靠它)✅
+- [x] `tools/registry_codegen.gd` + 无头入口 `generate_registries.tscn`(`-- check` 供 CI 校验生成物过期)+ 编辑器一键 `editor_regen_registries.gd`(File > Run)✅
+- [x] 生成 `src/resource/generated/` 下 `Scenes`/`Uis`/`Assets` 强类型常量类,加载键用 **uid://**(改名/移动后不重新生成也不断链);删除手写 `SceneIds`/`UIIds`/`AssetIds`/`ResPaths` ✅
+- [x] 三个 Service 运行时零 .tres 加载(查表纯静态);单测新增 4 项注册表校验(26 断言);文档同步(naming/add-a-ui/模块文档/tools README)✅ 无头验证通过(codegen check + 架构 CLEAN + 26 测试 + 启动冒烟全绿)
+
+**设计要点**:注册表 .tres 是唯一权威数据源(策划侧拖拽编辑),常量类是它的编译产物——"双数据源失配"靠生成关系消解,不靠人肉对齐。生成器对 id 重复/非法、条目漏拖资源报错拒绝生成,对场景 asset_group 无对应资产告警。
+
 ---
 
 ## 迁移轨道(现有项目,与 M2+ 并行)

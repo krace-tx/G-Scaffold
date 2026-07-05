@@ -19,7 +19,7 @@ func reload_current() -> void                                                 # 
 func get_current_id() -> StringName                                           # 当前场景 id
 ```
 
-场景 id → 路径的映射在 `resource/data/scene_registry.tres` 中声明,代码里用 `SceneIds.XXX` 常量引用。
+场景在 `resource/data/scene_registry.tres` 登记(Inspector 里拖 .tscn 即可,id 默认取文件名,可用 id_override 覆盖),生成的 `Scenes` 常量类供代码引用(`Scenes.XXX`,见 src/resource/generated/)。运行时不 load 该 .tres,查表走生成类,加载键是 uid://(文件移动/改名不断链)。
 
 ## 场景契约
 

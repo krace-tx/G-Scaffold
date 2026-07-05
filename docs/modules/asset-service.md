@@ -20,7 +20,7 @@ func release_group(group: StringName) -> void   # 释放整组缓存引用
 func is_cached(id: StringName) -> bool
 ```
 
-资产 id → 路径/分组的映射在 `asset_map.tres`,代码用 `AssetIds.XXX` 常量引用,注册表路径经 `ResPaths.ASSET_MAP`。
+资产在 `asset_map.tres` 登记(Inspector 里拖资源文件 + 填分组,id 默认取文件名,可用 id_override 覆盖——同一文件登记多组时必须),生成的 `Assets` 常量类供代码引用(`Assets.XXX`,见 src/resource/generated/)。运行时不 load 该 .tres,查表走生成类。
 
 ## 分组与释放
 

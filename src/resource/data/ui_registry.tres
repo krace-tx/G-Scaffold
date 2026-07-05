@@ -1,18 +1,20 @@
-[gd_resource type="Resource" script_class="UIRegistry" load_steps=5 format=3 uid="uid://bheon2aam33w"]
+[gd_resource type="Resource" script_class="UIRegistry" load_steps=7 format=3 uid="uid://bheon2aam33w"]
 
 [ext_resource type="Script" path="res://src/resource/scripts/ui_registry.gd" id="1_registry"]
 [ext_resource type="Script" path="res://src/resource/scripts/ui_registry_entry.gd" id="2_entry"]
+[ext_resource type="PackedScene" uid="uid://c8s2p1n5r3wqv" path="res://src/game/ui/settings_panel.tscn" id="3_settings"]
+[ext_resource type="PackedScene" uid="uid://d3b8g1v6k2mnp" path="res://src/game/ui/debug_panel.tscn" id="4_debug"]
 
 [sub_resource type="Resource" id="Resource_settings"]
 script = ExtResource("2_entry")
-id = &"settings"
-scene_path = "res://src/game/ui/settings_panel.tscn"
+scene = ExtResource("3_settings")
+id_override = &"settings"
 layer = 2
 
 [sub_resource type="Resource" id="Resource_debug"]
 script = ExtResource("2_entry")
-id = &"debug"
-scene_path = "res://src/game/ui/debug_panel.tscn"
+scene = ExtResource("4_debug")
+id_override = &"debug"
 layer = 5
 cache = 0
 

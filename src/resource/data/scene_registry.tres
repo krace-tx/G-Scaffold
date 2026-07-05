@@ -1,17 +1,17 @@
-[gd_resource type="Resource" script_class="SceneRegistry" format=3 uid="uid://dq6n1s0t2m8yx"]
+[gd_resource type="Resource" script_class="SceneRegistry" load_steps=7 format=3 uid="uid://dq6n1s0t2m8yx"]
 
 [ext_resource type="Script" path="res://src/resource/scripts/scene_registry.gd" id="1_registry"]
 [ext_resource type="Script" path="res://src/resource/scripts/scene_registry_entry.gd" id="2_entry"]
+[ext_resource type="PackedScene" uid="uid://cqxmm0k4gj5vw" path="res://src/game/scenes/main_menu.tscn" id="3_main_menu"]
+[ext_resource type="PackedScene" uid="uid://c5nd12asqpruc" path="res://src/game/scenes/level.tscn" id="4_level"]
 
 [sub_resource type="Resource" id="Resource_main_menu"]
 script = ExtResource("2_entry")
-id = &"main_menu"
-scene_path = "res://src/game/scenes/main_menu.tscn"
+scene = ExtResource("3_main_menu")
 
 [sub_resource type="Resource" id="Resource_level"]
 script = ExtResource("2_entry")
-id = &"level"
-scene_path = "res://src/game/scenes/level.tscn"
+scene = ExtResource("4_level")
 asset_group = &"level"
 
 [resource]

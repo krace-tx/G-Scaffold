@@ -1,6 +1,6 @@
 # 命名规范
 
-> status: active | 最后更新: 2026-07-04
+> status: active | 最后更新: 2026-07-05
 
 ## 文件与节点
 
@@ -33,20 +33,26 @@
 |---|---|---|
 | 常量 | SCREAMING_SNAKE_CASE | `MAX_RETRY_COUNT` |
 | 变量/函数 | snake_case;私有加 `_` 前缀 | `_retry_count` |
-| 场景 id | 集中在 `SceneIds` 常量类 | `SceneIds.MAIN_MENU` |
-| UI id | 集中在 `UIIds` 常量类 | `UIIds.SETTINGS` |
-| 资产 id | 集中在 asset_map,代码经 `AssetIds` | `AssetIds.BTN_CLICK_SFX` |
-| **框架资源文件路径** | 集中在 `ResPaths` 常量类 | `ResPaths.SCENE_REGISTRY` |
+| 场景 id | 生成的 `Scenes` 常量类(勿手写,见下) | `Scenes.MAIN_MENU` |
+| UI id | 生成的 `Uis` 常量类(勿手写,见下) | `Uis.SETTINGS` |
+| 资产 id | 生成的 `Assets` 常量类(勿手写,见下) | `Assets.BTN_CLICK_SFX` |
 | StringName 字面量 | 用 `&"xxx"` 形式 | `&"fade"` |
 
 **原则:同一个字符串在两处以上出现,必须提升为常量。** 魔法字符串是重构的头号敌人。
 
-### ID 常量 vs 路径常量:两类不要混
+### ID 常量类是生成物,不许手写
 
-- **ID 常量类**(`SceneIds` / `UIIds` / `AssetIds`)存的是**逻辑标识**——业务代码用它表达"我要哪个场景/界面/资产",不关心它在磁盘哪。
-- **`ResPaths`** 存的是框架硬编码的**物理文件路径**——各注册表/配置 `.tres` 的 `res://` 位置(如 `scene_registry.tres`、`ui_registry.tres`、`asset_map.tres`),供框架内部 `load()` 用。
+`Scenes` / `Uis` / `Assets`(`src/resource/generated/`)由生成器从三份注册表 .tres
+(scene_registry / ui_registry / asset_map)生成:注册表(Inspector 里拖资源登记)是
+**唯一权威数据源**,常量类是它的编译产物,两边不可能失配。改了注册表就重跑生成器
+——编辑器 File > Run `tools/editor_regen_registries.gd`,或
+`godot --headless --path . res://tools/generate_registries.tscn`(CI 加 `-- check` 校验)。
 
-判断口诀:**"我要哪个东西" → ID 常量;"这个文件在哪" → `ResPaths`。** 禁止在 Service 里再写 `const _XXX_PATH := "res://..."` 局部常量。
+- 业务代码只认 `Scenes.XXX` / `Uis.XXX` / `Assets.XXX`,禁止裸字符串 id。
+- 运行时不 load 注册表 .tres(条目直接引用资源本体,load 会全量进内存);查表一律
+  走生成类,生成类里存 uid:// 加载键,文件移动/改名不断链。
+- 禁止在 Service 里写 `const _XXX_PATH := "res://..."` 局部常量——`res://` 路径只应
+  出现在注册表 .tres 与生成类里(tools/ 工具脚本除外)。
 
 ## Autoload
 

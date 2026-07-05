@@ -16,9 +16,6 @@ const _ENTER_TIMEOUT: float = 10.0   ## 新场景 _on_enter 的超时上限(秒)
 #endregion
 
 #region Exports & State
-## 场景 id → 路径注册表,_ready 时一次性加载。为空时所有 replace 都会走失败路径。
-var _registry: SceneRegistry
-
 ## 当前已进入的顶层场景 id;尚未切换过任何场景时为空字符串。
 var _current_id: StringName = &""
 
@@ -39,9 +36,6 @@ var _is_switching: bool = false
 
 #region Lifecycle
 func _ready() -> void:
-	# 注册表在此同步 load 一次(体积极小,只是 id→路径映射,不含场景本身),
-	# 之后每次切换才按需 load_threaded 真正的场景资源。
-	_registry = load(ResPaths.SCENE_REGISTRY) as SceneRegistry
 	_build_overlay()
 #endregion
 
@@ -88,13 +82,12 @@ func _drain_queue() -> void:
 ## 5. 遮罩仍盖着时跑 _on_enter(场景做准备,玩家看不到闪烁)→ 再淡入揭开
 ## 6. 最后才发 scene_changed:此刻新场景已入场完毕,监听方拿到的是"已就绪"状态
 func _switch_to(scene_id: StringName, _transition: StringName) -> void:
-	var entry := _registry.find(scene_id) if _registry else null
-	if entry == null or entry.scene_path.is_empty():
+	if not Scenes.has_id(scene_id):
 		_fail(scene_id, "unknown scene id")
 		return
 
 	var old_group := _current_group
-	var new_group := entry.asset_group
+	var new_group := Scenes.asset_group(scene_id)
 
 	await _fade_out()
 
@@ -102,9 +95,9 @@ func _switch_to(scene_id: StringName, _transition: StringName) -> void:
 	if App.assets and new_group != &"":
 		App.assets.preload_group(new_group)
 
-	var packed := await _load_threaded(entry.scene_path)
+	var packed := await _load_threaded(Scenes.load_path(scene_id))
 	if packed == null:
-		_fail(scene_id, "failed to load: %s" % entry.scene_path)
+		_fail(scene_id, "failed to load: %s" % Scenes.file_path(scene_id))
 		await _fade_in()   # 加载失败也要揭开遮罩,否则停在当前场景上却是一片黑
 		return
 

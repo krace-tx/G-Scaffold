@@ -21,9 +21,9 @@ signal died
 
 ```gdscript
 # ✅ 命令走 API
-App.ui.open(UIIds.SETTINGS)
+App.ui.open(Uis.SETTINGS)
 App.audio.play_bgm(&"battle_theme")
-App.scenes.replace(SceneIds.LEVEL_SELECT)
+App.scenes.replace(Scenes.LEVEL_SELECT)
 ```
 
 ## 第三层:事实 —— Bus 领域事件

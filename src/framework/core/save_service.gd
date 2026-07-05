@@ -13,7 +13,7 @@ extends RefCounted
 #region Constants & Enums
 ## 代码认识的存档结构版本。加字段/改结构时 +1,并在游戏侧注册对应的迁移函数。
 const CURRENT_VERSION: int = 1
-## user:// 运行时数据路径,非 res:// 资源,故不进 ResPaths(那只收 res:// 路径)。
+## user:// 运行时数据路径,非 res:// 资源,不属于注册表/生成常量类体系。
 const _SAVE_PATH: String = "user://save.json"
 #endregion
 

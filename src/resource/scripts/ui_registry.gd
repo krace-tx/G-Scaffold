@@ -1,20 +1,14 @@
 class_name UIRegistry
 extends Resource
 
-## UI id → 记录的注册表,数据实例为 res://src/resource/data/ui_registry.tres。
+## UI 注册表(唯一权威数据源),数据实例为 res://src/resource/data/ui_registry.tres。
 ##
-## UIService 只认 [member entries] 里登记过的 id,新增界面时改这份 .tres
-## (在编辑器 Inspector 里增删 [UIRegistryEntry]),不改代码。
+## 新增界面:Inspector 里给 [member entries] 加一条 [UIRegistryEntry],拖 .tscn、
+## 选层级/缓存策略,然后跑一次生成器得到 [Uis] 常量类(见 tools/registry_codegen.gd)。
+##
+## [b]运行时不得 load 本资源[/b]——条目直接引用 PackedScene,加载本表会把所有
+## 界面同步拉进内存。运行时查表一律走生成的 [Uis](src/resource/generated/)。
 
 #region Exports & State
 @export var entries: Array[UIRegistryEntry] = []
-#endregion
-
-#region Public API
-## 查找 [param id] 对应的记录,不存在时返回 null。
-func find(id: StringName) -> UIRegistryEntry:
-	for entry in entries:
-		if entry.id == id:
-			return entry
-	return null
 #endregion

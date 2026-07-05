@@ -32,9 +32,6 @@ const _BACK_LAYERS: Array[UIRegistryEntry.Layer] = [
 #endregion
 
 #region Exports & State
-## id → 界面记录的注册表,_ready 时一次性加载。
-var _registry: UIRegistry
-
 ## 逻辑层 → 该层的 CanvasLayer 节点。界面 add 到对应层的 CanvasLayer 下。
 var _layers: Dictionary = {}
 
@@ -50,7 +47,6 @@ var _cache: Dictionary = {}
 
 #region Lifecycle
 func _ready() -> void:
-	_registry = load(ResPaths.UI_REGISTRY) as UIRegistry
 	_build_layers()
 #endregion
 
@@ -62,19 +58,19 @@ func open(ui_id: StringName, params: Dictionary = {}) -> BaseUI:
 	if _open.has(ui_id):
 		return _open[ui_id]
 
-	var entry := _registry.find(ui_id) if _registry else null
-	if entry == null:
+	if not Uis.has_id(ui_id):
 		App.log.error("ui", "unknown ui id: %s" % ui_id)
 		return null
 
-	var ui := _acquire(entry)
+	var ui := _acquire(ui_id)
 	if ui == null:
-		App.log.error("ui", "failed to load ui: %s" % entry.scene_path)
+		App.log.error("ui", "failed to load ui: %s" % Uis.file_path(ui_id))
 		return null
 
 	# 挂到对应层,并以 ui_id 命名(调试树可读、也便于按名查找)。
-	NodeUtils.mount_required(ui, _layers[entry.layer], String(ui_id))
-	(_stacks[entry.layer] as Array).append(ui)
+	var layer := Uis.layer(ui_id)
+	NodeUtils.mount_required(ui, _layers[layer], String(ui_id))
+	(_stacks[layer] as Array).append(ui)
 	_open[ui_id] = ui
 	ui._on_open(params)
 	Bus.ui_opened.emit(ui_id)
@@ -87,14 +83,14 @@ func close(ui_id: StringName) -> void:
 	if not _open.has(ui_id):
 		return
 	var ui: BaseUI = _open[ui_id]
-	var entry := _registry.find(ui_id)
+	var layer := Uis.layer(ui_id)
 
 	ui._on_close()
-	(_stacks[entry.layer] as Array).erase(ui)
+	(_stacks[layer] as Array).erase(ui)
 	_open.erase(ui_id)
-	_layers[entry.layer].remove_child(ui)
+	_layers[layer].remove_child(ui)
 
-	if entry.cache == UIRegistryEntry.Cache.KEEP:
+	if Uis.cache(ui_id) == UIRegistryEntry.Cache.KEEP:
 		_cache[ui_id] = ui
 	else:
 		ui.queue_free()
@@ -122,16 +118,16 @@ func is_open(ui_id: StringName) -> bool:
 #endregion
 
 #region Internal
-## 取得界面实例:优先复用 KEEP 缓存里的,否则加载场景实例化一份。
-func _acquire(entry: UIRegistryEntry) -> BaseUI:
-	if _cache.has(entry.id):
-		return _pop_cache(entry.id)
-	var packed := load(entry.scene_path) as PackedScene
+## 取得界面实例:优先复用 KEEP 缓存里的,否则按注册表加载场景实例化一份。
+func _acquire(ui_id: StringName) -> BaseUI:
+	if _cache.has(ui_id):
+		return _pop_cache(ui_id)
+	var packed := load(Uis.load_path(ui_id)) as PackedScene
 	if packed == null:
 		return null
 	var ui := packed.instantiate() as BaseUI
 	if ui != null:
-		ui.set_meta(&"ui_id", entry.id)
+		ui.set_meta(&"ui_id", ui_id)
 	return ui
 
 
