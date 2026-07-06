@@ -40,19 +40,18 @@
 
 **原则:同一个字符串在两处以上出现,必须提升为常量。** 魔法字符串是重构的头号敌人。
 
-### ID 常量类是生成物,不许手写
+### ID 常量类与注册表保持同步
 
-`Scenes` / `Uis` / `Assets`(`src/resource/generated/`)由生成器从三份注册表 .tres
-(scene_registry / ui_registry / asset_map)生成:注册表(Inspector 里拖资源登记)是
-**唯一权威数据源**,常量类是它的编译产物,两边不可能失配。改了注册表就重跑生成器
-——编辑器 File > Run `tools/editor_regen_registries.gd`,或
-`godot --headless --path . res://tools/generate_registries.tscn`(CI 加 `-- check` 校验)。
+`Scenes` / `Uis` / `Assets`(`src/resource/generated/`)对应三份注册表 .tres
+(scene_registry / ui_registry / asset_map):注册表(Inspector 里拖资源登记)是
+**唯一权威数据源**,常量类需与注册表手动保持同步。改了注册表就同步改
+`src/resource/generated/` 下对应的 `Scenes` / `Uis` / `Assets` 文件。
 
 - 业务代码只认 `Scenes.XXX` / `Uis.XXX` / `Assets.XXX`,禁止裸字符串 id。
 - 运行时不 load 注册表 .tres(条目直接引用资源本体,load 会全量进内存);查表一律
   走生成类,生成类里存 uid:// 加载键,文件移动/改名不断链。
 - 禁止在 Service 里写 `const _XXX_PATH := "res://..."` 局部常量——`res://` 路径只应
-  出现在注册表 .tres 与生成类里(tools/ 工具脚本除外)。
+  出现在注册表 .tres 与生成类里。
 
 ## Autoload
 

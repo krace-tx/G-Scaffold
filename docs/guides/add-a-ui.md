@@ -31,11 +31,10 @@ func _on_close() -> void:                   # 关闭前清理(断开外部信号
 | layer | HUD / Window / Popup / Toast / Loading(决定 CanvasLayer 与栈) |
 | cache | `KEEP`(常驻内存,高频 UI)/ `DESTROY`(关闭即毁,低频大 UI) |
 
-### 3. 重新生成 Uis 常量类
+### 3. 同步 Uis 常量类
 
-编辑器里 File > Run 跑 `tools/editor_regen_registries.gd`(或命令行
-`godot --headless --path . res://tools/generate_registries.tscn`),
-`Uis.SETTINGS` 常量就有了。**不要手改** `src/resource/generated/` 下的文件。
+在 `src/resource/data/ui_registry.tres` 登记后,手动同步
+`src/resource/generated/uis.gd`,`Uis.SETTINGS` 常量就有了。
 
 ### 4. 打开与关闭
 

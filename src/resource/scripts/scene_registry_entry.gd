@@ -5,7 +5,7 @@ extends Resource
 ##
 ## 引用经 Godot UID 追踪——场景文件移动/改名不断链,也不需要改本表。
 ## id 默认取场景文件名(main_menu.tscn → &"main_menu"),需要时用
-## [member id_override] 覆盖。登记后跑一次生成器(见 tools/registry_codegen.gd),
+## [member id_override] 覆盖。登记后同步更新 [code]src/resource/generated/scenes.gd[/code],
 ## 业务代码经生成的 [Scenes] 常量类引用,不手写字符串。
 
 #region Exports & State

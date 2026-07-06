@@ -1,13 +1,8 @@
 class_name Uis
 extends RefCounted
 
-## GENERATED — 本文件由 tools/registry_codegen.gd 生成,手改会在下次生成时丢失。
-## 数据源:res://src/resource/data/ui_registry.tres(Inspector 里拖资源进条目即完成登记)。
-## 重新生成:编辑器 File > Run 跑 res://tools/editor_regen_registries.gd,或命令行
-## godot --headless --path . res://tools/generate_registries.tscn(加 `-- check` 只校验)。
-##
-## 加载键是 uid://:源文件移动/改名后本表依然有效(UID 稳定),只有增删条目、
-## 改 id_override / 分组 / 层级等登记信息才需要重新生成。
+## 与 res://src/resource/data/ui_registry.tres 保持同步。
+## 增删条目时手改本文件(加载键用 uid://,源文件移动/改名后仍有效)。
 
 const SETTINGS: StringName = &"settings"
 const DEBUG: StringName = &"debug"
