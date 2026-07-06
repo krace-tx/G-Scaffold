@@ -19,6 +19,9 @@ data_*/
 /android/
 /ios/.build/
 /addons/**/bin/
+# Windows GDExtension stub manifests (bin/ is otherwise ignored for native mobile binaries).
+!/addons/**/bin/*.gdextension
+!/addons/**/bin/*.gdextension.uid
 
 # ============================================================
 #  导出与构建输出
