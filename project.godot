@@ -24,6 +24,10 @@ App="*res://src/framework/autoloads/app.gd"
 
 gdscript/warnings/untyped_declaration=2
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/asset_groups/plugin.cfg")
+
 [file_customization]
 
 folder_colors={

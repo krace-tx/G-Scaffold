@@ -1,9 +1,9 @@
 class_name UIIds
 extends RefCounted
 
-## UI id 常量集中地。代码里一律用 [code]UIIds.XXX[/code],禁止裸字符串
-## (见 docs/conventions/naming.md)。id 必须与 ui_registry.tres 里登记的
-## [member UIRegistryEntry.id] 完全一致,否则 UIService 找不到界面。
+## 界面 id 常量集中地(自动生成,请勿手改)。
+## 由 res://addons/asset_groups/ 导出时,依据 asset_manifest.tres 整体重写。
+## 代码里一律用 UIIds.XXX,禁止裸字符串;详见 docs/conventions/naming.md。
 
 const SETTINGS: StringName = &"settings"
 const DEBUG: StringName = &"debug"

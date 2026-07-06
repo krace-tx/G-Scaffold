@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="AssetManifest" format=3]
+
+[ext_resource type="Script" path="res://src/resource/scripts/asset_manifest.gd" id="1_manifest"]
+[ext_resource type="Script" path="res://src/resource/scripts/scene_entry.gd" id="2_scene"]
+[ext_resource type="Script" path="res://src/resource/scripts/ui_entry.gd" id="3_ui"]
+[ext_resource type="Script" path="res://src/resource/scripts/asset_entry.gd" id="4_asset"]
+
+[sub_resource type="Resource" id="Scene_main_menu"]
+script = ExtResource("2_scene")
+id = &"main_menu"
+scene_path = "res://src/game/scenes/main_menu.tscn"
+group = &""
+
+[sub_resource type="Resource" id="Scene_level"]
+script = ExtResource("2_scene")
+id = &"level"
+scene_path = "res://src/game/scenes/level.tscn"
+group = &"level"
+
+[sub_resource type="Resource" id="UI_settings"]
+script = ExtResource("3_ui")
+id = &"settings"
+scene_path = "res://src/game/ui/settings_panel.tscn"
+layer = 2
+cache = 1
+
+[sub_resource type="Resource" id="UI_debug"]
+script = ExtResource("3_ui")
+id = &"debug"
+scene_path = "res://src/game/ui/debug_panel.tscn"
+layer = 5
+cache = 0
+
+[sub_resource type="Resource" id="Asset_icon"]
+script = ExtResource("4_asset")
+id = &"icon"
+path = "res://icon.svg"
+group = &"core"
+
+[sub_resource type="Resource" id="Asset_level_icon"]
+script = ExtResource("4_asset")
+id = &"level_icon"
+path = "res://icon.svg"
+group = &"level"
+
+[resource]
+script = ExtResource("1_manifest")
+scenes = Array[ExtResource("2_scene")]([SubResource("Scene_main_menu"), SubResource("Scene_level")])
+uis = Array[ExtResource("3_ui")]([SubResource("UI_settings"), SubResource("UI_debug")])
+assets = Array[ExtResource("4_asset")]([SubResource("Asset_icon"), SubResource("Asset_level_icon")])

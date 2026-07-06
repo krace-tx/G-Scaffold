@@ -9,6 +9,5 @@ extends RefCounted
 ##
 ## 禁止在各 Service 里再写 const _XXX_PATH := "res://..." 的局部常量,一律登记到这里。
 
-const SCENE_REGISTRY: String = "res://src/resource/data/scene_registry.tres"
-const UI_REGISTRY: String = "res://src/resource/data/ui_registry.tres"
-const ASSET_MAP: String = "res://src/resource/data/asset_map.tres"
+## 全项目唯一的资源清单(scene + ui + asset 三类条目合一)。三个 Service 都 load 它。
+const MANIFEST: String = "res://src/resource/data/asset_manifest.tres"

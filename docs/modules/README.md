@@ -18,3 +18,4 @@
 | AssetService | [asset-service.md](asset-service.md) | active(M5 已实现) |
 | AudioService | [audio-service.md](audio-service.md) | active(M5 已实现) |
 | PlatformService(ads/analytics) | [platform-service.md](platform-service.md) | active(M3 已实现) |
+| AssetManifest + Asset Groups 编辑器 | [asset-groups.md](asset-groups.md) | active(统一清单 + 可视化编辑器) |

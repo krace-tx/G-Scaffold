@@ -41,8 +41,8 @@ func _initialize() -> void:
 		{
 			"scope": "res://src/",
 			"pattern": "\"res://src/assets/",
-			"msg": "禁止裸 assets 路径字符串,须经 AssetService + asset_map",
-			"allow": ["asset_map.tres"],
+			"msg": "禁止裸 assets 路径字符串,须经 AssetService + asset_manifest",
+			"allow": ["asset_manifest.tres"],
 		},
 	]
 

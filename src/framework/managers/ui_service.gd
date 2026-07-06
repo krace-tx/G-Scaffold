@@ -15,25 +15,25 @@ extends Node
 ## layer=100 错开**:HUD~Loading 全在 100 以下(转场时被黑幕盖住),Debug 在
 ## 100 以上(转场时仍可见,方便调试)。
 const _LAYER_ORDER: Dictionary = {
-	UIRegistryEntry.Layer.HUD: 10,
-	UIRegistryEntry.Layer.WINDOW: 20,
-	UIRegistryEntry.Layer.POPUP: 30,
-	UIRegistryEntry.Layer.TOAST: 40,
-	UIRegistryEntry.Layer.LOADING: 50,
-	UIRegistryEntry.Layer.DEBUG: 110,
+	UIEntry.Layer.HUD: 10,
+	UIEntry.Layer.WINDOW: 20,
+	UIEntry.Layer.POPUP: 30,
+	UIEntry.Layer.TOAST: 40,
+	UIEntry.Layer.LOADING: 50,
+	UIEntry.Layer.DEBUG: 110,
 }
 
 ## 返回键的响应层级顺序:只有 Popup / Window 这类模态界面吃返回键,
 ## HUD / Toast / Loading / Debug 不响应。按此顺序取最上层的一个处理。
-const _BACK_LAYERS: Array[UIRegistryEntry.Layer] = [
-	UIRegistryEntry.Layer.POPUP,
-	UIRegistryEntry.Layer.WINDOW,
+const _BACK_LAYERS: Array[UIEntry.Layer] = [
+	UIEntry.Layer.POPUP,
+	UIEntry.Layer.WINDOW,
 ]
 #endregion
 
 #region Exports & State
-## id → 界面记录的注册表,_ready 时一次性加载。
-var _registry: UIRegistry
+## 全项目统一资源清单,_ready 时一次性加载;只读它的 ui 条目那部分。
+var _manifest: AssetManifest
 
 ## 逻辑层 → 该层的 CanvasLayer 节点。界面 add 到对应层的 CanvasLayer 下。
 var _layers: Dictionary = {}
@@ -50,7 +50,7 @@ var _cache: Dictionary = {}
 
 #region Lifecycle
 func _ready() -> void:
-	_registry = load(ResPaths.UI_REGISTRY) as UIRegistry
+	_manifest = load(ResPaths.MANIFEST) as AssetManifest
 	_build_layers()
 #endregion
 
@@ -62,7 +62,7 @@ func open(ui_id: StringName, params: Dictionary = {}) -> BaseUI:
 	if _open.has(ui_id):
 		return _open[ui_id]
 
-	var entry := _registry.find(ui_id) if _registry else null
+	var entry := _manifest.find_ui(ui_id) if _manifest else null
 	if entry == null:
 		App.log.error("ui", "unknown ui id: %s" % ui_id)
 		return null
@@ -87,14 +87,14 @@ func close(ui_id: StringName) -> void:
 	if not _open.has(ui_id):
 		return
 	var ui: BaseUI = _open[ui_id]
-	var entry := _registry.find(ui_id)
+	var entry := _manifest.find_ui(ui_id)
 
 	ui._on_close()
 	(_stacks[entry.layer] as Array).erase(ui)
 	_open.erase(ui_id)
 	_layers[entry.layer].remove_child(ui)
 
-	if entry.cache == UIRegistryEntry.Cache.KEEP:
+	if entry.cache == UIEntry.Cache.KEEP:
 		_cache[ui_id] = ui
 	else:
 		ui.queue_free()
@@ -105,7 +105,7 @@ func close(ui_id: StringName) -> void:
 ## 找到最上层的模态界面:先给它 [method BaseUI._on_back] 自决;未消费则默认关闭它。
 ## 返回 true = 已被某个界面处理;false = 当前没有可响应的界面(交由上层做场景级返回)。
 func handle_back() -> bool:
-	for layer: UIRegistryEntry.Layer in _BACK_LAYERS:
+	for layer: UIEntry.Layer in _BACK_LAYERS:
 		var stack: Array = _stacks[layer]
 		if stack.is_empty():
 			continue
@@ -123,7 +123,7 @@ func is_open(ui_id: StringName) -> bool:
 
 #region Internal
 ## 取得界面实例:优先复用 KEEP 缓存里的,否则加载场景实例化一份。
-func _acquire(entry: UIRegistryEntry) -> BaseUI:
+func _acquire(entry: UIEntry) -> BaseUI:
 	if _cache.has(entry.id):
 		return _pop_cache(entry.id)
 	var packed := load(entry.scene_path) as PackedScene
@@ -143,11 +143,11 @@ func _pop_cache(ui_id: StringName) -> BaseUI:
 
 ## 为每个逻辑层建一个 CanvasLayer 并初始化空栈。
 func _build_layers() -> void:
-	for layer: UIRegistryEntry.Layer in _LAYER_ORDER:
+	for layer: UIEntry.Layer in _LAYER_ORDER:
 		var canvas := CanvasLayer.new()
 		canvas.layer = _LAYER_ORDER[layer]
 		# 按枚举名命名(UILayer_POPUP 等),调试场景树一眼可读。
-		NodeUtils.mount_required(canvas, self, "UILayer_%s" % UIRegistryEntry.Layer.keys()[layer])
+		NodeUtils.mount_required(canvas, self, "UILayer_%s" % UIEntry.Layer.keys()[layer])
 		_layers[layer] = canvas
 		_stacks[layer] = []
 #endregion

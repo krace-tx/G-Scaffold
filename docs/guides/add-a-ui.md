@@ -20,21 +20,19 @@ func _on_close() -> void:                   # 关闭前清理(断开外部信号
     pass
 ```
 
-### 2. 在 ui_registry.tres 注册
+### 2. 在 Asset Groups 面板登记
 
-`resource/data/ui_registry.tres` 中添加条目,声明三件事:
+打开编辑器底部的 **Asset Groups** 面板(插件,见 [asset-groups.md](../modules/asset-groups.md)),在 **UIs** 分区里「快速载入」或从 FileSystem 拖入 `settings_panel.tscn`(id 与 path 自动注入),声明三件事:
 
 | 字段 | 说明 |
 |---|---|
-| 场景路径 | `res://src/game/ui/settings_panel.tscn` |
+| 场景路径 | `res://src/game/ui/settings_panel.tscn`(拖入/快速载入自动填) |
 | 层级 | HUD / Window / Popup / Toast / Loading(决定 CanvasLayer 与栈) |
 | 缓存策略 | `KEEP`(常驻内存,高频 UI)/ `DESTROY`(关闭即毁,低频大 UI) |
 
-### 3. 在 UIIds 添加常量
+### 3. 点「导出」
 
-```gdscript
-const SETTINGS := &"settings_panel"
-```
+面板「导出」会一并写出 `asset_manifest.tres` 并**自动生成** `UIIds` 常量(`UIIds.SETTINGS`),无需手改 `ui_ids.gd`。
 
 ### 4. 打开与关闭
 

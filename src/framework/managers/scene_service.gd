@@ -16,8 +16,9 @@ const _ENTER_TIMEOUT: float = 10.0   ## 新场景 _on_enter 的超时上限(秒)
 #endregion
 
 #region Exports & State
-## 场景 id → 路径注册表,_ready 时一次性加载。为空时所有 replace 都会走失败路径。
-var _registry: SceneRegistry
+## 全项目统一资源清单,_ready 时一次性加载;只读它的 scene 条目那部分。
+## 为 null 时所有 replace 都会走失败路径。
+var _manifest: AssetManifest
 
 ## 当前已进入的顶层场景 id;尚未切换过任何场景时为空字符串。
 var _current_id: StringName = &""
@@ -39,9 +40,9 @@ var _is_switching: bool = false
 
 #region Lifecycle
 func _ready() -> void:
-	# 注册表在此同步 load 一次(体积极小,只是 id→路径映射,不含场景本身),
+	# 清单在此同步 load 一次(体积极小,只是 id→路径映射,不含场景本身),
 	# 之后每次切换才按需 load_threaded 真正的场景资源。
-	_registry = load(ResPaths.SCENE_REGISTRY) as SceneRegistry
+	_manifest = load(ResPaths.MANIFEST) as AssetManifest
 	_build_overlay()
 #endregion
 
@@ -88,13 +89,13 @@ func _drain_queue() -> void:
 ## 5. 遮罩仍盖着时跑 _on_enter(场景做准备,玩家看不到闪烁)→ 再淡入揭开
 ## 6. 最后才发 scene_changed:此刻新场景已入场完毕,监听方拿到的是"已就绪"状态
 func _switch_to(scene_id: StringName, _transition: StringName) -> void:
-	var entry := _registry.find(scene_id) if _registry else null
+	var entry := _manifest.find_scene(scene_id) if _manifest else null
 	if entry == null or entry.scene_path.is_empty():
 		_fail(scene_id, "unknown scene id")
 		return
 
 	var old_group := _current_group
-	var new_group := entry.asset_group
+	var new_group := entry.group
 
 	await _fade_out()
 

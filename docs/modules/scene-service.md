@@ -19,7 +19,7 @@ func reload_current() -> void                                                 # 
 func get_current_id() -> StringName                                           # 当前场景 id
 ```
 
-场景 id → 路径的映射在 `resource/data/scene_registry.tres` 中声明,代码里用 `SceneIds.XXX` 常量引用。
+场景 id → 路径的映射在统一清单 `resource/data/asset_manifest.tres` 的 `scenes` 数组里声明(经 Asset Groups 编辑器插件维护,见 [asset-groups.md](asset-groups.md)),代码里用 `SceneIds.XXX` 常量引用。
 
 ## 场景契约
 
@@ -60,4 +60,4 @@ func _on_exit() -> void                      # 真正销毁前调用,可 await(�
 ## 测试要点
 
 - 编辑器:调试面板提供任意场景跳转按钮
-- 单测:注册表缺失 id、加载超时、连续快速调用 `replace`(应排队而非并发)
+- 单测:清单缺失 id、加载超时、连续快速调用 `replace`(应排队而非并发)

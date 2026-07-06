@@ -35,16 +35,16 @@
 | 变量/函数 | snake_case;私有加 `_` 前缀 | `_retry_count` |
 | 场景 id | 集中在 `SceneIds` 常量类 | `SceneIds.MAIN_MENU` |
 | UI id | 集中在 `UIIds` 常量类 | `UIIds.SETTINGS` |
-| 资产 id | 集中在 asset_map,代码经 `AssetIds` | `AssetIds.BTN_CLICK_SFX` |
-| **框架资源文件路径** | 集中在 `ResPaths` 常量类 | `ResPaths.SCENE_REGISTRY` |
+| 资产 id | 集中在 `AssetIds` 常量类(由清单导出生成) | `AssetIds.BTN_CLICK_SFX` |
+| **框架资源文件路径** | 集中在 `ResPaths` 常量类 | `ResPaths.MANIFEST` |
 | StringName 字面量 | 用 `&"xxx"` 形式 | `&"fade"` |
 
 **原则:同一个字符串在两处以上出现,必须提升为常量。** 魔法字符串是重构的头号敌人。
 
 ### ID 常量 vs 路径常量:两类不要混
 
-- **ID 常量类**(`SceneIds` / `UIIds` / `AssetIds`)存的是**逻辑标识**——业务代码用它表达"我要哪个场景/界面/资产",不关心它在磁盘哪。
-- **`ResPaths`** 存的是框架硬编码的**物理文件路径**——各注册表/配置 `.tres` 的 `res://` 位置(如 `scene_registry.tres`、`ui_registry.tres`、`asset_map.tres`),供框架内部 `load()` 用。
+- **ID 常量类**(`SceneIds` / `UIIds` / `AssetIds`)存的是**逻辑标识**——业务代码用它表达"我要哪个场景/界面/资产",不关心它在磁盘哪。这三份文件由 Asset Groups 编辑器插件从清单**导出时整体生成**,不要手改(见 [asset-groups.md](../modules/asset-groups.md))。
+- **`ResPaths`** 存的是框架硬编码的**物理文件路径**——统一清单/配置 `.tres` 的 `res://` 位置(如 `asset_manifest.tres`),供框架内部 `load()` 用。
 
 判断口诀:**"我要哪个东西" → ID 常量;"这个文件在哪" → `ResPaths`。** 禁止在 Service 里再写 `const _XXX_PATH := "res://..."` 局部常量。
 

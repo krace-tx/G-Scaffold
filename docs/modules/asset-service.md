@@ -4,7 +4,7 @@
 
 ## 职责与边界
 
-**做什么**:按 `asset_map.tres`(id → 路径 + 分组)管理资产的加载/缓存/释放。核心目标是**控制内存峰值**:核心资产常驻,场景/关卡资产进场景预载、离场景释放。
+**做什么**:按统一清单 `asset_manifest.tres` 的 asset 条目(id → 路径 + 分组)管理资产的加载/缓存/释放。核心目标是**控制内存峰值**:核心资产常驻,场景/关卡资产进场景预载、离场景释放。清单由 Asset Groups 编辑器插件维护(见 [asset-groups.md](asset-groups.md))。
 
 **明确不做什么**:
 - 不做异步/线程加载——当前用同步 `load()`(分组体积可控);需要时再引入 `load_threaded`
@@ -20,11 +20,11 @@ func release_group(group: StringName) -> void   # 释放整组缓存引用
 func is_cached(id: StringName) -> bool
 ```
 
-资产 id → 路径/分组的映射在 `asset_map.tres`,代码用 `AssetIds.XXX` 常量引用,注册表路径经 `ResPaths.ASSET_MAP`。
+资产 id → 路径/分组的映射在 `asset_manifest.tres` 的 `assets` 数组里,代码用 `AssetIds.XXX` 常量引用,清单路径经 `ResPaths.MANIFEST`。
 
 ## 分组与释放
 
-`AssetMapEntry` 有 `group` 字段。分组是预载/释放的单位:
+`AssetEntry` 有 `group` 字段。分组是预载/释放的单位:
 - `&"core"`:常驻资产,Bootstrap 阶段 5 预热,永不释放
 - 各场景/关卡一组:进场景预载、离场景释放
 
@@ -32,11 +32,11 @@ func is_cached(id: StringName) -> bool
 
 ## 与 SceneService 的协作
 
-`SceneRegistryEntry` 有可空的 `asset_group` 字段。SceneService 切场景时:
+`SceneEntry` 有可空的 `group` 字段。SceneService 切场景时:
 1. 遮罩盖住后、加载新场景前:`preload_group(新场景组)`
 2. 新场景入场后:`release_group(旧场景组)`(与新组相同则保留,避免刚载又释放)
 
-留空 `asset_group` 的场景完全跳过这套流程(行为与 M1 一致)。
+留空 `group` 的场景完全跳过这套流程(行为与 M1 一致)。
 
 ## Bus 事件
 
@@ -49,7 +49,7 @@ func is_cached(id: StringName) -> bool
 
 ## 持有的数据
 
-- `_map`:asset_map 实例;`_cache`:id → 已加载 Resource,进程生命周期(按组增删)
+- `_manifest`:统一清单实例(只用其 asset 条目);`_cache`:id → 已加载 Resource,进程生命周期(按组增删)
 
 ## 失败策略
 

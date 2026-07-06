@@ -1,8 +1,10 @@
-class_name UIRegistryEntry
+class_name UIEntry
 extends Resource
 
-## UI 注册表的一条记录:id → 场景路径 + 所在层级 + 缓存策略。
-## 由 [UIRegistry] 持有一组,数据在 res://src/resource/data/ui_registry.tres。
+## 清单里的一条 UI 记录:id → 场景路径 + 所在层级 + 缓存策略。
+## 由 [AssetManifest] 的 [member AssetManifest.uis] 持有一组。
+##
+## 通过编辑器插件(res://addons/asset_groups/)可视化增删,不建议在 Inspector 里手改。
 
 ## 界面所属的渲染层。层级从低到高:HUD < Window < Popup < Toast < Loading < Debug。
 ## 实际 CanvasLayer.layer 数值由 UIService 统一分配(见 ui_service.gd),此处只是逻辑分类。
