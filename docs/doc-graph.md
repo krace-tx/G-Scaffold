@@ -96,7 +96,7 @@ flowchart LR
 | 文档 | 入度 | 被谁引用 |
 |---|---|---|
 | ADR-0001 App 聚合根 | 4 | overview、ADR 索引、naming、add-a-service |
-| boot-sequence 启动管线 | 3 | overview、模块模板、add-a-service |
+| boot-sequence 启动管线 | 3 | overview、模块模板、add-a-service、各 *-service.md |
 | ADR-0003 版本化存档 | 3 | overview、ADR 索引、开发计划 |
 | ADR-0004 平台防腐层 | 3 | overview、ADR 索引、add-a-platform-provider |
 

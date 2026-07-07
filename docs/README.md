@@ -14,6 +14,15 @@
 | [conventions/](conventions/directory.md) | 目录、命名、编码、Git 规范 | 写第一行代码前;Code Review 时 |
 | [guides/](guides/add-a-service.md) | 常见开发任务的操作指南 | 加 UI、加服务、接 SDK 时照着做 |
 
+**guides 索引**(按文件名,不用 README):
+
+| 文件 | 用途 |
+|---|---|
+| [add-a-service.md](guides/add-a-service.md) | 新增框架服务 |
+| [add-a-ui.md](guides/add-a-ui.md) | 新增 UI |
+| [add-a-platform-provider.md](guides/add-a-platform-provider.md) | 接入平台 Provider |
+| [gdextension-windows-stubs.md](guides/gdextension-windows-stubs.md) | Windows GDExtension stub 编译 |
+
 ## 文档写作规则
 
 文档不是负担,是架构的一部分。规则只有四条:

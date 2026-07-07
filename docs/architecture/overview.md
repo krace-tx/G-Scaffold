@@ -34,7 +34,7 @@
 
 | Autoload | 职责 |
 |---|---|
-| `App` | 类型化服务聚合根。持有所有服务的类型化引用:`App.ui`、`App.scenes`、`App.save`… 由 Bootstrap 按序创建注入 |
+| `App` | 类型化服务聚合根。持有所有服务的类型化引用:`App.ui`、`App.scenes`、`App.save`… 由启动管线各 `BootStage` 按序创建注入 |
 | `Bus` | 全局信号总线。只承载"已发生的事实"(领域事件),见 [communication.md](communication.md) |
 
 服务本身是普通对象(`class_name XxxService`),**不是 Autoload**。初始化顺序由 [启动管线](boot-sequence.md) 显式控制,不依赖 Autoload 加载顺序。

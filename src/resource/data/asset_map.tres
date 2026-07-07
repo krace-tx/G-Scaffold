@@ -1,20 +1,7 @@
-[gd_resource type="Resource" script_class="AssetMap" load_steps=6 format=3 uid="uid://c2m5y8k1r4wpn"]
+[gd_resource type="Resource" script_class="AssetMap" format=3 uid="uid://c2m5y8k1r4wpn"]
 
-[ext_resource type="Script" path="res://src/resource/scripts/asset_map.gd" id="1_map"]
-[ext_resource type="Script" path="res://src/resource/scripts/asset_map_entry.gd" id="2_entry"]
-[ext_resource type="Texture2D" uid="uid://bc8ebymj1nbdj" path="res://icon.svg" id="3_icon"]
-
-[sub_resource type="Resource" id="Resource_icon"]
-script = ExtResource("2_entry")
-asset = ExtResource("3_icon")
-group = &"core"
-
-[sub_resource type="Resource" id="Resource_level_icon"]
-script = ExtResource("2_entry")
-asset = ExtResource("3_icon")
-id_override = &"level_icon"
-group = &"level"
+[ext_resource type="Script" uid="uid://bjfrff5nbu3uv" path="res://addons/godot_registry_studio/entities/asset/asset_map.gd" id="1_map"]
+[ext_resource type="Script" uid="uid://brl6a3t8wihc7" path="res://addons/godot_registry_studio/entities/asset/asset_map_entry.gd" id="2_entry"]
 
 [resource]
 script = ExtResource("1_map")
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_icon"), SubResource("Resource_level_icon")])

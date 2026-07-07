@@ -38,7 +38,7 @@ func get_bus_volume(bus: String) -> float
 ## 依赖
 
 - 依赖:`AudioServer`(引擎);无其他框架服务依赖
-- 初始化时机:Bootstrap 内核接线阶段(与 Scene/UI/Asset 一同),挂在 App 下
+- 初始化时机:`CoreServiceStage`(与 Scene/UI/Asset 一同),挂在 App 下
 
 ## 持有的数据
 

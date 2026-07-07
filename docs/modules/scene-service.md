@@ -50,7 +50,7 @@ func _on_exit() -> void                      # 真正销毁前调用,可 await(�
 ## 依赖
 
 - 依赖:`App.log`、`App.assets`(预载场景资源组)
-- 初始化时机:Bootstrap 第 1 阶段之后即可用(切场景在第 6 阶段才首次发生)
+- 初始化时机:`CoreServiceStage` 之后即可用(切场景在 `EnterGameStage` 才首次发生)
 
 ## 失败策略
 

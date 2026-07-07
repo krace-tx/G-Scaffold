@@ -33,7 +33,7 @@ func is_trusted() -> bool                  # 是否已校时(false=系统时钟,
 ## 依赖
 
 - 依赖:无(纯 `Time` 单例封装)
-- 初始化时机:Bootstrap 阶段 2 创建;阶段 4 / 登录成功后(M4)`sync_from_server`;`app_resumed` 时应重新校时
+- 初始化时机:`LocalConfigStage` 创建;`NetworkStage` / 登录成功后(M4) `sync_from_server`;`app_resumed` 时应重新校时
 
 ## 持有的数据
 

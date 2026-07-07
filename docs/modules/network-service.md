@@ -29,7 +29,7 @@ func login_and_sync() -> Result                                      # 登录+�
 - `Dictionary`:直接作为成功负载返回(`Result.ok(response)`)
 - `Callable(method, path, body) -> Result`:自定义逻辑,可模拟失败分支
 
-未注册的 path 返回 `Result.err(...)`。Bootstrap 阶段 4 默认用 Mock 演示完整链路(见 `bootstrap.gd _demo_mock_responses`);接入真实后端后改用 `configure()`。
+未注册的 path 返回 `Result.err(...)`。`NetworkStage` 默认用 Mock 演示完整链路(见 `network_stage.gd` 的 `_demo_mock_responses`);接入真实后端后改用 `configure()`。
 
 ## 重试策略
 
@@ -42,7 +42,7 @@ func login_and_sync() -> Result                                      # 登录+�
 ## 依赖
 
 - 依赖:`App.log`、`App.time`(`sync_from_server`)、`App.config`(`apply_remote`)
-- 初始化时机:Bootstrap 阶段 4;`App._on_app_resumed` 恢复前台时重新握手(fire-and-forget,失败只记 warn)
+- 初始化时机:`NetworkStage`;`App._on_app_resumed` 恢复前台时重新握手(fire-and-forget,失败只记 warn)
 
 ## 持有的数据
 
@@ -54,7 +54,7 @@ func login_and_sync() -> Result                                      # 登录+�
 - Mock 模式下未注册 path:`err`,不崩
 - 真实模式网络层失败/5xx:重试至 `max_retries`,仍失败返回 `err`
 - 真实模式 4xx:立即返回 `err`,不重试
-- `login_and_sync` 任一步失败:整体返回 `err`;调用方(Bootstrap 阶段 4)降级为已有的本地缓存/默认值,**不阻断启动**
+- `login_and_sync` 任一步失败:整体返回 `err`;`NetworkStage` 使用 `DEGRADE`,降级为已有的本地缓存/默认值,**不阻断启动**
 
 ## 测试要点
 

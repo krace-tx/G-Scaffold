@@ -25,7 +25,7 @@ func is_cached(id: StringName) -> bool
 ## 分组与释放
 
 `AssetMapEntry` 有 `group` 字段。分组是预载/释放的单位:
-- `&"core"`:常驻资产,Bootstrap 阶段 5 预热,永不释放
+- `&"core"`:常驻资产,`AssetStage` 预热,永不释放
 - 各场景/关卡一组:进场景预载、离场景释放
 
 **释放语义**:`release_group` 只是从缓存 `_cache` 里 `erase`(丢引用)。资源在**无其他持有者**时才被引擎真正回收——若场景仍在用某资产,它不会因 release 而消失(引用计数保护)。已验证 release 后 WeakRef 变空(确实回收)。
@@ -45,7 +45,7 @@ func is_cached(id: StringName) -> bool
 ## 依赖
 
 - 依赖:`App.log`
-- 初始化时机:Bootstrap 内核接线阶段挂在 App 下;阶段 5 预热 `&"core"` 组
+- 初始化时机:`CoreServiceStage` 挂在 App 下;`AssetStage` 预热 `&"core"` 组
 
 ## 持有的数据
 

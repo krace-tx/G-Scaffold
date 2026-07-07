@@ -43,7 +43,7 @@ App.save.set_migrations({
 ## 依赖
 
 - 依赖:`App.log`
-- 初始化时机:Bootstrap 阶段 2,`load_or_create` 在此调用;切后台时 `App._notification` 触发 `flush`
+- 初始化时机:`SaveStage`,`load_or_create` 在此调用;切后台时 `App._notification` 触发 `flush`
 
 ## 持有的数据
 
@@ -54,7 +54,7 @@ App.save.set_migrations({
 
 - 文件不存在:空档,`ok`
 - JSON 解析失败(损坏):备份原文件 + 走空档 + `ok`(**不阻断**——玩家无法自修损坏档,阻断等于锁死)
-- 磁盘 I/O 读失败:`err`(Bootstrap 阶段 2 据此阻断重试)
+- 磁盘 I/O 读失败:`err`(`SaveStage` 使用 `RETRY`,终止管线供重试 UI)
 - 写失败:`flush` 返回 `err`
 
 ## 测试要点

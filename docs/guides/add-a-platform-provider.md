@@ -1,6 +1,6 @@
 # 指南:对接一个平台 SDK
 
-> status: active | 最后更新: 2026-07-04
+> status: active | 最后更新: 2026-07-06
 
 适用:接入广告、内购、统计、推送等任何第三方/平台能力。核心原则见 [ADR-0004](../architecture/decisions/0004-platform-null-providers.md):**业务代码永远不知道 SDK 的存在。**
 
@@ -52,7 +52,7 @@ static func create() -> AdProvider:
         _:         return NullAdProvider.new()
 ```
 
-Bootstrap 第 3 阶段初始化;初始化失败 → 原地替换为 Null 实现(降级,不阻断启动)。
+`PlatformStage` 调 `PlatformService.setup()`;各 provider 初始化失败 → 原地替换为 Null 实现(降级,不阻断启动)。见 [boot-sequence.md](../architecture/boot-sequence.md)。
 
 ### 5. 业务侧使用
 

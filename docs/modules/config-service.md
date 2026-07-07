@@ -41,7 +41,7 @@ func apply_remote(remote: Dictionary) -> void      # M4:应用远程 + 落盘缓
 ## 依赖
 
 - 依赖:`App.log`(缓存写失败告警)
-- 初始化时机:Bootstrap 阶段 2 创建 + `load_local`;阶段 4(M4)`apply_remote`
+- 初始化时机:`LocalConfigStage` 创建 + `load_local`;`NetworkStage` / 登录成功后 `apply_remote`
 
 ## 持有的数据
 

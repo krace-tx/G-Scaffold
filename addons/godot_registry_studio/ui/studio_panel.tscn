@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3 uid="uid://dk7registrypanel"]
+
+[ext_resource type="Script" path="res://addons/godot_registry_studio/ui/studio_panel.gd" id="1_panel"]
+
+[node name="StudioPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_panel")
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TabBar" type="TabBar" parent="Root/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GenerateButton" type="Button" parent="Root/Header"]
+layout_mode = 2
+text = "Generate All"
+
+[node name="StatusLabel" type="Label" parent="Root/Header"]
+layout_mode = 2
+text = "Ready"
+
+[node name="Toolbar" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AddButton" type="Button" parent="Root/Toolbar"]
+layout_mode = 2
+text = "Add Entry"
+
+[node name="RemoveButton" type="Button" parent="Root/Toolbar"]
+layout_mode = 2
+disabled = true
+text = "Remove"
+
+[node name="OpenTresButton" type="Button" parent="Root/Toolbar"]
+layout_mode = 2
+text = "Open .tres"
+
+[node name="EntryTree" type="Tree" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+hide_root = true
+column_titles_visible = true
+
+[node name="Footer" type="Label" parent="Root"]
+layout_mode = 2
+autowrap_mode = 3
+text = ""

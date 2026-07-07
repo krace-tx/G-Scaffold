@@ -1,6 +1,6 @@
 # 指南:新增一个框架服务
 
-> status: active | 最后更新: 2026-07-04
+> status: active | 最后更新: 2026-07-06
 
 适用:向 `framework/` 添加新的全局服务(XxxService)。**不要**为此新增 Autoload(见 [ADR-0001](../architecture/decisions/0001-typed-app-root.md))。
 
@@ -26,16 +26,24 @@ func setup() -> void:   # 异步初始化则 -> 带 await 的方法
 var foo: FooService
 ```
 
-### 3. 在 Bootstrap 对应阶段创建注入
+### 3. 在启动管线对应 Stage 创建注入
 
-根据依赖与失败策略选择阶段(见 [boot-sequence.md](../architecture/boot-sequence.md)):
+根据依赖与失败策略选择阶段(见 [boot-sequence.md](../architecture/boot-sequence.md) 默认 Stage 表):
+
+1. 在 `core/boot/stages/` 新建 `XxxStage extends BootStage`(或扩展现有 Stage 的 `run()`)。
+2. 注册到 `BootPipeline.default_stages()`。
+3. 在 `run()` 里创建服务并赋值 `App.foo`:
 
 ```gdscript
-App.foo = FooService.new()
-await App.foo.setup()
+func run(_ctx: BootContext) -> Result:
+    App.foo = FooService.new()
+    var res := await App.foo.setup()
+    if res.is_err():
+        return res
+    return Result.ok()
 ```
 
-想清楚:**初始化失败是阻断还是降级?** 写进模块文档。
+想清楚:**初始化失败是阻断还是降级?** 在 `failure_strategy()` 中声明,并写进模块文档。
 
 ### 4. 写模块文档
 

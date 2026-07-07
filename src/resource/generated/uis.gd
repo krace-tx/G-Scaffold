@@ -1,8 +1,8 @@
 class_name Uis
 extends RefCounted
 
-## 与 res://src/resource/data/ui_registry.tres 保持同步。
-## 增删条目时手改本文件(加载键用 uid://,源文件移动/改名后仍有效)。
+## ⚠ 自动生成,请勿手改 —— 由「Registries」面板(addons/registry_manager)生成。
+## 数据源:res://src/resource/data/ui_registry.tres,改动请在面板编辑后重新生成。
 
 const SETTINGS: StringName = &"settings"
 const DEBUG: StringName = &"debug"

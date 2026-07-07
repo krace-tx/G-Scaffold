@@ -1,6 +1,6 @@
 # 命名规范
 
-> status: active | 最后更新: 2026-07-05
+> status: active | 最后更新: 2026-07-06
 
 ## 文件与节点
 
@@ -56,3 +56,14 @@
 ## Autoload
 
 只有 `App` 与 `Bus` 两个,禁止新增(见 [ADR-0001](../architecture/decisions/0001-typed-app-root.md))。
+
+## 文档文件
+
+| 类型 | 命名 | 示例 |
+|---|---|---|
+| 指南(`guides/`) | 短横线连接的主题名,**不用** `README` | `add-a-ui.md`、`gdextension-windows-stubs.md` |
+| 模块规格(`modules/`) | `xxx-service.md` | `scene-service.md` |
+| 架构/规范 | 同上,文件名即主题 | `directory.md`、`boot-sequence.md` |
+| 目录索引 | 仅各子目录入口允许 `README.md` | `docs/README.md`、`modules/README.md` |
+
+新增文档时优先用**能看懂主题的文件名**;只有充当目录索引的入口页才用 `README.md`。

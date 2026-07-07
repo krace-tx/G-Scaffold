@@ -1,6 +1,6 @@
 # 框架开发计划
 
-> status: M0~M6 全部完成 ✅(不含真机 SDK 联调)| 最后更新: 2026-07-04 | 预估基准:1 名开发者全职
+> status: M0~M6 全部完成 ✅(不含真机 SDK 联调)| 最后更新: 2026-07-06 | 预估基准:1 名开发者全职
 
 ## 总目标
 
@@ -167,6 +167,11 @@
 - [x] 三个 Service 运行时零 .tres 加载(查表纯静态);单测新增 4 项注册表校验(26 断言);文档同步(naming/add-a-ui/模块文档/tools README)✅ 无头验证通过(codegen check + 架构 CLEAN + 26 测试 + 启动冒烟全绿)
 
 **设计要点**:注册表 .tres 是唯一权威数据源(策划侧拖拽编辑),常量类是它的编译产物——"双数据源失配"靠生成关系消解,不靠人肉对齐。生成器对 id 重复/非法、条目漏拖资源报错拒绝生成,对场景 asset_group 无对应资产告警。
+
+## 启动管线重构(2026-07-06)
+
+- [x] `core/boot/` — `BootPipeline` + `StageRunner` + 8 个 `BootStage`(Log / CoreServices / LocalConfig / Save / Platform / Network / Asset / EnterGame);`bootstrap.gd` 瘦身为入口 ✅
+- [x] 文档同步:`architecture/boot-sequence.md`、各 `modules/*-service.md`、`guides/add-a-service.md` ✅
 
 ---
 

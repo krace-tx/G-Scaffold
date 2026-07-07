@@ -27,7 +27,7 @@ func xxx(param: Type) -> ReturnType  # 说明
 ## 依赖
 
 - 依赖的其他服务:(例:依赖 `App.log`、`App.assets`)
-- 初始化时机:Bootstrap 第 N 阶段
+- 初始化时机:启动 Stage 名(如 `LogStage`),见 [boot-sequence.md](../architecture/boot-sequence.md)
 
 ## 持有的数据
 

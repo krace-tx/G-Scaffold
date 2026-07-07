@@ -1,10 +1,10 @@
 # LogService 模块文档
 
-> status: active | 最后更新: 2026-07-04 | 代码位置: `res://src/framework/core/log_service.gd`
+> status: active | 最后更新: 2026-07-06 | 代码位置: `res://src/framework/core/log_service.gd`
 
 ## 职责与边界
 
-**做什么**:全项目统一的日志出口——按 tag 分类、按级别(DEBUG/INFO/WARN/ERROR)过滤,并维护一个环形缓冲供崩溃上报/调试面板/用户反馈导出最近日志。是 Bootstrap 第一个创建的服务,后续所有阶段和服务都依赖它。
+**做什么**:全项目统一的日志出口——按 tag 分类、按级别(DEBUG/INFO/WARN/ERROR)过滤,并维护一个环形缓冲供崩溃上报/调试面板/用户反馈导出最近日志。由 `LogStage` 最先创建并赋值给 `App.log`,后续所有 Stage 与服务都依赖它。
 
 **明确不做什么**:
 - 不做远程日志上传——那是运营/监控基建,若要接入,包一层订阅 `dump()` 的上报服务,不塞进 LogService 本身
@@ -24,7 +24,7 @@ func clear() -> void                           # 清空缓冲
 ## 行格式
 
 每行:`[时间戳] [级别] [tag] 消息`,例如
-`[2026-07-04 23:37:51.851] [INFO] [boot] phase 1/6: log service ready`。
+`[2026-07-04 23:37:51.851] [INFO] [boot] stage start: Log (1/8)`。
 时间戳为系统本地时间 `YYYY-MM-DD HH:MM:SS.mmm`(毫秒便于排序快速事件),经
 `TimeUtils.now_string()` 生成——走系统墙钟而非 `App.time`,因为日志早于 M4 校时就要能用。缓冲与 `dump()` 导出都带时间戳。
 
@@ -35,7 +35,7 @@ func clear() -> void                           # 清空缓冲
 ## 依赖
 
 - 依赖:仅 `TimeUtils.now_string()`(纯静态时间格式化,无场景树/App 依赖),用于行时间戳
-- 初始化时机:Bootstrap 阶段 1(见 [boot-sequence.md](../architecture/boot-sequence.md)),赋值给 `App.log`,必须在所有其他阶段之前完成
+- 初始化时机:`LogStage`(见 [boot-sequence.md](../architecture/boot-sequence.md)),赋值给 `App.log`,必须在所有其他 Stage 之前完成
 
 ## 持有的数据
 
@@ -44,7 +44,7 @@ func clear() -> void                           # 清空缓冲
 
 ## 失败策略
 
-- 本身不会失败(纯内存操作),因此 Bootstrap 阶段 1 标注为"不可失败"
+- 本身不会失败(纯内存操作),因此 `LogStage` 使用 `FATAL` 策略
 - 调用方传入非法 tag/msg 不做校验——这是开发期工具,不是面向用户输入的边界
 
 ## 测试要点

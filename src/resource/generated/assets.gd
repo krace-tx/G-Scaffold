@@ -1,22 +1,16 @@
 class_name Assets
 extends RefCounted
 
-## 与 res://src/resource/data/asset_map.tres 保持同步。
-## 增删条目时手改本文件(加载键用 uid://,源文件移动/改名后仍有效)。
+## ⚠ 自动生成,请勿手改 —— 由「Registries」面板(addons/registry_manager)生成。
+## 数据源:res://src/resource/data/asset_map.tres,改动请在面板编辑后重新生成。
 
-const ICON: StringName = &"icon"
-const LEVEL_ICON: StringName = &"level_icon"
 
 ## id → { uid(加载键), path(仅日志/可读性), group(资产分组) }。
 const _TABLE: Dictionary = {
-	ICON: { "uid": "uid://bc8ebymj1nbdj", "path": "res://icon.svg", "group": &"core" },
-	LEVEL_ICON: { "uid": "uid://bc8ebymj1nbdj", "path": "res://icon.svg", "group": &"level" },
 }
 
 ## 分组 → 组内 id 列表(生成期预计算,按组预载/释放遍历用)。
 const _GROUPS: Dictionary = {
-	&"core": [ICON],
-	&"level": [LEVEL_ICON],
 }
 
 

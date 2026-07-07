@@ -53,7 +53,7 @@ if res.is_rewarded():
 
 ## 初始化与降级
 
-Bootstrap 阶段 3 调 `setup()`:各 provider **并行** `initialize()`,每个 5s 超时。
+`PlatformStage` 调 `PlatformService.setup()`:各 provider **并行** `initialize()`,每个 5s 超时。
 - 成功 → 用真实现
 - `initialize()` 返回 false(失败)或超时 → **降级为对应 Null 实现**,日志 warn
 
@@ -68,7 +68,7 @@ Bootstrap 阶段 3 调 `setup()`:各 provider **并行** `initialize()`,每个 5
 ## 依赖
 
 - 依赖:`App.log`;PlatformService 是 Node(需 `get_tree()` 做超时轮询),挂在 App 下
-- 初始化时机:Bootstrap 阶段 3
+- 初始化时机:`PlatformStage`
 
 ## 失败策略
 

@@ -61,7 +61,7 @@ func _on_back() -> bool                      # 返回键;true=自行消费,false
 ## 依赖
 
 - 依赖:`App.log`、`Bus`;返回键由 `App._notification` 的 `NOTIFICATION_WM_GO_BACK_REQUEST` 转发进 `handle_back()`
-- 初始化时机:Bootstrap 内核接线阶段(与 SceneService 一同),挂在 App 下
+- 初始化时机:`CoreServiceStage`(与 SceneService 一同),挂在 App 下
 
 ## 失败策略
 
