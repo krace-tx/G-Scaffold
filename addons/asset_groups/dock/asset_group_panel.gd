@@ -15,10 +15,11 @@ const _NONE_GROUP_ITEM := "— none —"
 @onready var _tree: AssetGroupTree = %GroupTree
 @onready var _add_id_button: Button = %AddIdButton
 @onready var _add_group_button: Button = %AddGroupButton
+@onready var _empty_state: Control = %EmptyState
 @onready var _detail_panel: PanelContainer = %DetailPanel
 @onready var _detail: VBoxContainer = %Detail
 @onready var _id_edit: LineEdit = %IdEdit
-@onready var _path_edit: LineEdit = %PathEdit
+@onready var _path_edit: EntryPathLineEdit = %PathEdit
 @onready var _browse_button: Button = %BrowseButton
 @onready var _group_option: OptionButton = %GroupOption
 @onready var _drag_hint_panel: PanelContainer = %DragHintPanel
@@ -41,6 +42,7 @@ func _ready() -> void:
 	_path_dialog = EditorFileDialog.new()
 	_path_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	_path_dialog.access = EditorFileDialog.ACCESS_RESOURCES
+	_path_dialog.filters = EntryPathUtils.file_dialog_filters(EntryPathUtils.ASSET_EXTENSIONS)
 	_path_dialog.file_selected.connect(_on_path_picked)
 	add_child(_path_dialog)
 
@@ -89,10 +91,23 @@ func _ready() -> void:
 		_new_group_dialog.popup_centered())
 	_id_edit.text_changed.connect(_on_id_changed)
 	_path_edit.text_changed.connect(_on_path_changed)
+	_path_edit.path_dropped.connect(_on_path_picked)
 	_browse_button.pressed.connect(func() -> void: _path_dialog.popup_centered_ratio())
 	_group_option.item_selected.connect(_on_group_option_selected)
 	_remove_button.pressed.connect(_on_remove_pressed)
-	_detail_panel.hide()
+	_empty_state.setup(
+		self,
+		"Folder",
+		"No asset selected",
+		"Pick an asset id from the group tree to edit path and group.",
+		PackedStringArray([
+			"Press + on the toolbar to add an id to the selected group",
+			"Drag supported files from FileSystem onto the path field",
+			"Use the folder button to create a new asset group",
+			"Drag assets between groups to reorganize",
+		])
+	)
+	_show_empty_state()
 
 
 func set_manifest(manifest: AssetManifest) -> void:
@@ -142,7 +157,17 @@ func refresh() -> void:
 	else:
 		_selected_tree_item = null
 		_selected_asset_id = &""
-		_detail_panel.hide()
+		_show_empty_state()
+
+
+func _show_empty_state() -> void:
+	_detail.hide()
+	_empty_state.show()
+
+
+func _show_detail() -> void:
+	_empty_state.hide()
+	_detail.show()
 
 
 func _on_tree_item_selected() -> void:
@@ -151,7 +176,7 @@ func _on_tree_item_selected() -> void:
 	if meta == null:
 		_selected_tree_item = null
 		_selected_asset_id = &""
-		_detail_panel.hide()
+		_show_empty_state()
 		return
 	_selected_tree_item = item
 	_selected_asset_id = meta
@@ -160,9 +185,9 @@ func _on_tree_item_selected() -> void:
 
 func _populate_detail(entry: AssetEntry) -> void:
 	if entry == null:
-		_detail_panel.hide()
+		_show_empty_state()
 		return
-	_detail_panel.show()
+	_show_detail()
 	_syncing_form = true
 	EntryPathUtils.set_line_edit_text(_id_edit, String(entry.id))
 	EntryPathUtils.set_line_edit_text(_path_edit, entry.path)
@@ -249,11 +274,12 @@ func _apply_path_from_picker(path: String) -> void:
 	if entry == null:
 		return
 	entry.path = path
-	if not path.is_empty():
-		entry.id = EntryPathUtils.unique_id(EntryPathUtils.basename_id(path), func(id: StringName) -> bool:
-			var other := _manifest.find_asset(id)
-			return other != null and other != entry
-		)
+	var new_id := EntryPathUtils.resolve_id_after_path_pick(path, entry.id, func(id: StringName) -> bool:
+		var other := _manifest.find_asset(id)
+		return other != null and other != entry
+	)
+	if new_id != entry.id:
+		entry.id = new_id
 		_selected_asset_id = entry.id
 	_syncing_form = true
 	EntryPathUtils.set_line_edit_text(_path_edit, path)

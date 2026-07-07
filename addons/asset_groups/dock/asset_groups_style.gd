@@ -84,7 +84,7 @@ static func configure_id_edit(edit: LineEdit) -> void:
 ## 资源路径输入框:占位中文说明选取方式,内容仍为 res:// 路径。
 static func configure_path_edit(edit: LineEdit) -> void:
 	_apply_ltr_edit(edit)
-	edit.placeholder_text = "浏览或快速打开选择，也可粘贴 res:// 路径"
+	edit.placeholder_text = "浏览、拖拽或快速打开选择，也可粘贴 res:// 路径"
 	edit.clear_button_enabled = true
 	edit.language = "en"
 

@@ -21,7 +21,7 @@ _source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\">
 "
 
 [node name="AssetGroupDock" type="Control" unique_id=982201642]
-custom_minimum_size = Vector2(0, 280)
+clip_contents = true
 layout_direction = 2
 layout_mode = 3
 anchors_preset = 15
@@ -29,6 +29,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1")
 
 [node name="Root" type="VBoxContainer" parent="." unique_id=1918583051]
@@ -88,36 +90,34 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.6)
 theme_override_font_sizes/font_size = 12
-text = "1 scenes · 0 ui · 0 assets · 1 groups"
+text = "0 assets · 3 scenes · 2 ui · 2 groups"
 
 [node name="Tabs" type="TabContainer" parent="Root" unique_id=1660345504]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 current_tab = 0
-tab_0/title = "Scenes"
+tab_0/title = "Assets"
 tab_0/icon = SubResource("DPITexture_p8xvl")
-tab_1/title = "UI"
+tab_1/title = "Scenes"
 tab_1/icon = SubResource("DPITexture_p8xvl")
-tab_2/title = "Assets"
+tab_2/title = "UI"
 tab_2/icon = SubResource("DPITexture_p8xvl")
+
+[node name="AssetPanel" parent="Root/Tabs" unique_id=1032033065 instance=ExtResource("4")]
+unique_name_in_owner = true
+metadata/_tab_index = 0
+metadata/_tab_name = "Assets"
 
 [node name="ScenePanel" parent="Root/Tabs" unique_id=780443621 instance=ExtResource("2")]
 unique_name_in_owner = true
-layout_mode = 2
-metadata/_tab_index = 0
+visible = false
+metadata/_tab_index = 1
 metadata/_tab_name = "Scenes"
 
 [node name="UIPanel" parent="Root/Tabs" unique_id=1165993517 instance=ExtResource("3")]
 unique_name_in_owner = true
 visible = false
-layout_mode = 2
-metadata/_tab_index = 1
-metadata/_tab_name = "UI"
-
-[node name="AssetPanel" parent="Root/Tabs" unique_id=1032033065 instance=ExtResource("4")]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
 metadata/_tab_index = 2
-metadata/_tab_name = "Assets"
+metadata/_tab_name = "UI"

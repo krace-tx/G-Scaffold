@@ -9,10 +9,11 @@ signal changed
 
 @onready var _id_list: ItemList = %IdList
 @onready var _add_button: Button = %AddButton
+@onready var _empty_state: Control = %EmptyState
 @onready var _detail_panel: PanelContainer = %DetailPanel
 @onready var _detail: VBoxContainer = %Detail
 @onready var _id_edit: LineEdit = %IdEdit
-@onready var _path_edit: LineEdit = %ScenePathEdit
+@onready var _path_edit: EntryPathLineEdit = %ScenePathEdit
 @onready var _browse_button: Button = %BrowseButton
 @onready var _quick_open_button: Button = %QuickOpenButton
 @onready var _layer_option: OptionButton = %LayerOption
@@ -29,7 +30,7 @@ func _ready() -> void:
 	_path_dialog = EditorFileDialog.new()
 	_path_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	_path_dialog.access = EditorFileDialog.ACCESS_RESOURCES
-	_path_dialog.filters = PackedStringArray(["*.tscn ; Scenes"])
+	_path_dialog.filters = EntryPathUtils.file_dialog_filters(EntryPathUtils.SCENE_EXTENSIONS)
 	_path_dialog.file_selected.connect(_on_path_picked)
 	add_child(_path_dialog)
 
@@ -57,12 +58,25 @@ func _ready() -> void:
 	_id_list.item_selected.connect(_on_item_selected)
 	_id_edit.text_changed.connect(_on_id_changed)
 	_path_edit.text_changed.connect(_on_path_changed)
+	_path_edit.path_dropped.connect(_on_path_picked)
 	_browse_button.pressed.connect(func() -> void: _path_dialog.popup_centered_ratio())
 	_quick_open_button.pressed.connect(_on_quick_open_pressed)
 	_layer_option.item_selected.connect(_on_layer_selected)
 	_cache_option.item_selected.connect(_on_cache_selected)
 	_remove_button.pressed.connect(_on_remove_pressed)
-	_detail_panel.hide()
+	_empty_state.setup(
+		self,
+		"Control",
+		"No UI selected",
+		"Pick an entry from the list to edit id, scene path, layer and cache.",
+		PackedStringArray([
+			"Press + to add a new UI id",
+			"Drag a .tscn from FileSystem onto the path field",
+			"Layer controls which UI stack the panel belongs to",
+			"Cache policy decides whether the panel is kept in memory",
+		])
+	)
+	_show_empty_state()
 
 
 func set_manifest(manifest: AssetManifest) -> void:
@@ -90,7 +104,17 @@ func refresh() -> void:
 		_id_list.select(_selected_index)
 		_populate_detail(_manifest.uis[_selected_index])
 	else:
-		_detail_panel.hide()
+		_show_empty_state()
+
+
+func _show_empty_state() -> void:
+	_detail.hide()
+	_empty_state.show()
+
+
+func _show_detail() -> void:
+	_empty_state.hide()
+	_detail.show()
 
 
 func _on_add_pressed() -> void:
@@ -119,7 +143,7 @@ func _on_item_selected(index: int) -> void:
 
 
 func _populate_detail(entry: UIEntry) -> void:
-	_detail_panel.show()
+	_show_detail()
 	_syncing_form = true
 	EntryPathUtils.set_line_edit_text(_id_edit, String(entry.id))
 	EntryPathUtils.set_line_edit_text(_path_edit, entry.scene_path)
@@ -152,11 +176,10 @@ func _apply_path_from_picker(path: String) -> void:
 		return
 	var entry := _manifest.uis[_selected_index]
 	entry.scene_path = path
-	if not path.is_empty():
-		entry.id = EntryPathUtils.unique_id(EntryPathUtils.basename_id(path), func(id: StringName) -> bool:
-			var other := _manifest.find_ui(id)
-			return other != null and other != entry
-		)
+	entry.id = EntryPathUtils.resolve_id_after_path_pick(path, entry.id, func(id: StringName) -> bool:
+		var other := _manifest.find_ui(id)
+		return other != null and other != entry
+	)
 	_syncing_form = true
 	EntryPathUtils.set_line_edit_text(_path_edit, path)
 	EntryPathUtils.set_line_edit_text(_id_edit, String(entry.id))

@@ -110,7 +110,7 @@ Generate 时由 `RegistryGenerator` **全量重建、整份覆盖**，不做增�
 
 ### 打开面板
 
-启用插件后，编辑器底部 **Asset Groups** 标签页。
+启用插件后，编辑器顶部主屏幕标签栏（与 2D / 3D 同级）会出现 **Asset Groups**。
 
 ### 三个 Tab 的分工
 
