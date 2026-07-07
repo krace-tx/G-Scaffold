@@ -88,7 +88,7 @@ func close(ui_id: StringName) -> void:
 	ui._on_close()
 	(_stacks[layer] as Array).erase(ui)
 	_open.erase(ui_id)
-	_layers[layer].remove_child(ui)
+
 
 	if Uis.cache(ui_id) == UIRegistryEntry.Cache.KEEP:
 		_cache[ui_id] = ui

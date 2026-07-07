@@ -17,7 +17,7 @@ func run(_ctx: BootContext) -> Result:
 	var res := App.save.load_or_create()
 	if res.is_err():
 		return res
-
+	
 	App.log.info(LOG_TAG, "save ready")
 	return Result.ok()
 #endregion

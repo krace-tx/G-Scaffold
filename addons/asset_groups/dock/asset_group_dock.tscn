@@ -1,0 +1,123 @@
+[gd_scene format=3 uid="uid://4ddi5wlw17ua"]
+
+[ext_resource type="Script" uid="uid://b5ub7ca6li7kk" path="res://addons/asset_groups/dock/asset_group_dock.gd" id="1"]
+[ext_resource type="PackedScene" path="res://addons/asset_groups/dock/scene_group_panel.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://addons/asset_groups/dock/ui_group_panel.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://addons/asset_groups/dock/asset_group_panel.tscn" id="4"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8v3bo"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="DPITexture" id="DPITexture_p8xvl"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
+"
+
+[node name="AssetGroupDock" type="Control" unique_id=982201642]
+custom_minimum_size = Vector2(0, 280)
+layout_direction = 2
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Root" type="VBoxContainer" parent="." unique_id=1918583051]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="ToolbarPanel" type="PanelContainer" parent="Root" unique_id=388896932]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_8v3bo")
+
+[node name="Toolbar" type="HBoxContainer" parent="Root/ToolbarPanel" unique_id=1713209015]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ScanImportButton" type="Button" parent="Root/ToolbarPanel/Toolbar" unique_id=882441003]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Scan src/game/scenes, src/game/ui and src/assets; import new entries (id = filename, no group)"
+text = "Scan import"
+icon = SubResource("DPITexture_p8xvl")
+
+[node name="GenerateButton" type="Button" parent="Root/ToolbarPanel/Toolbar" unique_id=443116002]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Write scene/ui/asset registries + id constants"
+text = "Generate all"
+icon = SubResource("DPITexture_p8xvl")
+
+[node name="ReloadButton" type="Button" parent="Root/ToolbarPanel/Toolbar" unique_id=799311675]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Reload the manifest from disk"
+text = "Reload"
+icon = SubResource("DPITexture_p8xvl")
+
+[node name="StatusLabel" type="Label" parent="Root/ToolbarPanel/Toolbar" unique_id=922491987]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 2
+clip_text = true
+
+[node name="StatsMargin" type="MarginContainer" parent="Root" unique_id=1549667714]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="StatsLabel" type="Label" parent="Root/StatsMargin" unique_id=1145208061]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+theme_override_font_sizes/font_size = 12
+text = "1 scenes · 0 ui · 0 assets · 1 groups"
+
+[node name="Tabs" type="TabContainer" parent="Root" unique_id=1660345504]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+tab_0/title = "Scenes"
+tab_0/icon = SubResource("DPITexture_p8xvl")
+tab_1/title = "UI"
+tab_1/icon = SubResource("DPITexture_p8xvl")
+tab_2/title = "Assets"
+tab_2/icon = SubResource("DPITexture_p8xvl")
+
+[node name="ScenePanel" parent="Root/Tabs" unique_id=780443621 instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 2
+metadata/_tab_index = 0
+metadata/_tab_name = "Scenes"
+
+[node name="UIPanel" parent="Root/Tabs" unique_id=1165993517 instance=ExtResource("3")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+metadata/_tab_name = "UI"
+
+[node name="AssetPanel" parent="Root/Tabs" unique_id=1032033065 instance=ExtResource("4")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+metadata/_tab_name = "Assets"

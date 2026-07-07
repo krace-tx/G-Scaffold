@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="AssetMap" format=3 uid="uid://c2m5y8k1r4wpn"]
+[gd_resource type="Resource" script_class="AssetMap" format=3 uid="uid://cwqe587i8ta5t"]
 
-[ext_resource type="Script" uid="uid://bjfrff5nbu3uv" path="res://addons/godot_registry_studio/entities/asset/asset_map.gd" id="1_map"]
-[ext_resource type="Script" uid="uid://brl6a3t8wihc7" path="res://addons/godot_registry_studio/entities/asset/asset_map_entry.gd" id="2_entry"]
+[ext_resource type="Script" uid="uid://l4dxlafbghjh" path="res://addons/asset_groups/entities/asset/asset_map_entry.gd" id="1_svddv"]
+[ext_resource type="Script" uid="uid://c25e1qqs7qut0" path="res://addons/asset_groups/entities/asset/asset_map.gd" id="2_e6s5b"]
 
 [resource]
-script = ExtResource("1_map")
+script = ExtResource("2_e6s5b")

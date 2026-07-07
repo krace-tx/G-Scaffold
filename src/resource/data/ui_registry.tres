@@ -1,32 +1,18 @@
-[gd_resource type="Resource" script_class="UIRegistry" format=3 uid="uid://bheon2aam33w"]
+[gd_resource type="Resource" script_class="UIRegistry" format=3 uid="uid://bm8k423qhdpp3"]
 
-[ext_resource type="Script" uid="uid://c7u6bt3d2g3nf" path="res://addons/godot_registry_studio/entities/ui/ui_registry.gd" id="1_registry"]
-[ext_resource type="Script" uid="uid://slqiyeqqkt3l" path="res://addons/godot_registry_studio/entities/ui/ui_registry_entry.gd" id="2_entry"]
-[ext_resource type="PackedScene" uid="uid://c8s2p1n5r3wqv" path="res://src/game/ui/settings_panel.tscn" id="3_settings"]
-[ext_resource type="PackedScene" uid="uid://d3b8g1v6k2mnp" path="res://src/game/ui/debug_panel.tscn" id="4_debug"]
+[ext_resource type="Script" uid="uid://dp3rcivo4rdns" path="res://addons/asset_groups/entities/ui/ui_registry_entry.gd" id="1_dygsn"]
+[ext_resource type="Script" uid="uid://d3x7r4odpfc08" path="res://addons/asset_groups/entities/ui/ui_registry.gd" id="2_6s4qn"]
 
-[sub_resource type="Resource" id="Resource_settings"]
-script = ExtResource("2_entry")
-scene = ExtResource("3_settings")
-id_override = &"settings"
-layer = 2
+[sub_resource type="Resource" id="Resource_dygsn"]
+script = ExtResource("1_dygsn")
+id = &"debug_panel"
+scene_path = "res://src/game/ui/debug_panel.tscn"
 
-[sub_resource type="Resource" id="Resource_debug"]
-script = ExtResource("2_entry")
-scene = ExtResource("4_debug")
-id_override = &"debug"
-layer = 5
-cache = 0
-
-[sub_resource type="Resource" id="Resource_lsh28"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_7r1ip"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_d7doy"]
-script = ExtResource("2_entry")
+[sub_resource type="Resource" id="Resource_6s4qn"]
+script = ExtResource("1_dygsn")
+id = &"settings_panel"
+scene_path = "res://src/game/ui/settings_panel.tscn"
 
 [resource]
-script = ExtResource("1_registry")
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_settings"), SubResource("Resource_debug"), SubResource("Resource_lsh28"), SubResource("Resource_7r1ip"), SubResource("Resource_d7doy")])
+script = ExtResource("2_6s4qn")
+entries = Array[ExtResource("1_dygsn")]([SubResource("Resource_dygsn"), SubResource("Resource_6s4qn")])

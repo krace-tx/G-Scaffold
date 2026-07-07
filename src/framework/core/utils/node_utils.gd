@@ -23,7 +23,7 @@ static func mount(node: Node, parent: Node, custom_name: String = "") -> Result:
 	# 提前命名:入树前设,避免入树后重命名的信号开销,也让调试场景树可读。
 	if custom_name != "":
 		node.name = custom_name
-
+	
 	# 卫语句:拦截已销毁排队或父节点冲突(不能直接 add_child,会报错或行为未定义)。
 	if node.is_queued_for_deletion() or node.get_parent() != null:
 		return Result.err("Mount 失败: 节点 [%s] 已被标记销毁或已有父节点" % node.name)

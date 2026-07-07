@@ -26,7 +26,7 @@ gdscript/warnings/untyped_declaration=2
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_registry_studio/plugin.cfg", "res://addons/registry_manager/plugin.cfg")
+enabled=PackedStringArray("res://addons/asset_groups/plugin.cfg")
 
 [file_customization]
 

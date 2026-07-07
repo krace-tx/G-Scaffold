@@ -80,7 +80,7 @@ func _build_ui() -> void:
 	_add_button(vbox, "ClearSaveButton", "Clear Save", func() -> void: _clear_save())
 	_add_button(vbox, "DumpSaveButton", "Dump Save → log", func() -> void: App.log.info("debug", App.save.to_json()))
 	_add_button(vbox, "DumpLogsButton", "Dump Logs → stdout", func() -> void: print(App.log.dump()))
-	_add_button(vbox, "CloseButton", "Close", func() -> void: App.ui.close(Uis.DEBUG))
+	_add_button(vbox, "CloseButton", "Close", func() -> void: App.ui.close(Uis.DEBUG_PANEL))
 
 	_monitor_label = Label.new()
 	NodeUtils.mount_required(_monitor_label, vbox, "MonitorLabel")

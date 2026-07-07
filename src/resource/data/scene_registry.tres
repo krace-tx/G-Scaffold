@@ -1,40 +1,25 @@
-[gd_resource type="Resource" script_class="SceneRegistry" format=3 uid="uid://dq6n1s0t2m8yx"]
+[gd_resource type="Resource" script_class="SceneRegistry" format=3 uid="uid://cqikhli4viai8"]
 
-[ext_resource type="Script" uid="uid://qpu8mnpckvd7" path="res://addons/godot_registry_studio/entities/scene/scene_registry.gd" id="1_registry"]
-[ext_resource type="Script" uid="uid://c1es4rp5rtvnp" path="res://addons/godot_registry_studio/entities/scene/scene_registry_entry.gd" id="2_entry"]
-[ext_resource type="PackedScene" uid="uid://cqxmm0k4gj5vw" path="res://src/game/scenes/main_menu.tscn" id="3_main_menu"]
-[ext_resource type="PackedScene" uid="uid://c5nd12asqpruc" path="res://src/game/scenes/level.tscn" id="4_level"]
+[ext_resource type="Script" uid="uid://brkv706jj0j6r" path="res://addons/asset_groups/entities/scene/scene_registry_entry.gd" id="1_ix6yi"]
+[ext_resource type="Script" uid="uid://6y0d8e6shf04" path="res://addons/asset_groups/entities/scene/scene_registry.gd" id="2_oko8v"]
 
-[sub_resource type="Resource" id="Resource_main_menu"]
-script = ExtResource("2_entry")
-scene = ExtResource("3_main_menu")
+[sub_resource type="Resource" id="Resource_ix6yi"]
+script = ExtResource("1_ix6yi")
+id = &"boot"
+scene_path = "res://src/game/scenes/boot.tscn"
+asset_group = &"core"
 
-[sub_resource type="Resource" id="Resource_level"]
-script = ExtResource("2_entry")
-scene = ExtResource("4_level")
-asset_group = &"level"
+[sub_resource type="Resource" id="Resource_oko8v"]
+script = ExtResource("1_ix6yi")
+id = &"level"
+scene_path = "res://src/game/scenes/level.tscn"
 
 [sub_resource type="Resource" id="Resource_dj7df"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_7g4y1"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_wbwjb"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_su4ry"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_pa7do"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_1nh3q"]
-script = ExtResource("2_entry")
-
-[sub_resource type="Resource" id="Resource_vnc2a"]
-script = ExtResource("2_entry")
+script = ExtResource("1_ix6yi")
+id = &"main_menu"
+scene_path = "res://src/game/scenes/main_menu.tscn"
+asset_group = &"core"
 
 [resource]
-script = ExtResource("1_registry")
-entries = Array[ExtResource("2_entry")]([SubResource("Resource_main_menu"), SubResource("Resource_level"), SubResource("Resource_dj7df"), SubResource("Resource_7g4y1"), SubResource("Resource_wbwjb"), SubResource("Resource_su4ry"), SubResource("Resource_pa7do"), SubResource("Resource_1nh3q"), SubResource("Resource_vnc2a")])
+script = ExtResource("2_oko8v")
+entries = Array[ExtResource("1_ix6yi")]([SubResource("Resource_ix6yi"), SubResource("Resource_oko8v"), SubResource("Resource_dj7df")])

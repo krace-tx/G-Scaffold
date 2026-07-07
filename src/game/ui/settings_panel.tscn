@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://c8s2p1n5r3wqv"]
 
-[ext_resource type="Script" path="res://src/game/ui/settings_panel.gd" id="1_settings"]
+[ext_resource type="Script" uid="uid://ndenhvehniof" path="res://src/game/ui/settings_panel.gd" id="1_settings"]
 
-[node name="SettingsPanel" type="Control"]
+[node name="SettingsPanel" type="Control" unique_id=1625667817]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,14 +11,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_settings")
 
-[node name="Dim" type="ColorRect" parent="."]
+[node name="Dim" type="ColorRect" parent="." unique_id=1829260662]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0, 0, 0, 0.45)
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=1461670799]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -32,7 +34,7 @@ offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="Panel"]
+[node name="Label" type="Label" parent="Panel" unique_id=1429174680]
 layout_mode = 2
 text = "Settings (placeholder)"
 horizontal_alignment = 1
