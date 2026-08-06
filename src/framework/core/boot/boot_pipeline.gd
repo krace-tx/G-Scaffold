@@ -21,18 +21,11 @@ func _init(p_host: Node, p_stages: Array[BootStage]) -> void:
 
 #region Public API
 ## 返回项目默认启动阶段列表;修改此表即调整启动顺序与内容。
-static func default_stages() -> Array[BootStage]:
+static func app_launch_stages() -> Array[BootStage]:
 	return [
-		LogStage.new(),            # 日志服务
-		CoreServiceStage.new(),    # 场景 / UI / 资产 / 音频服务挂树
-		LocalConfigStage.new(),    # 时间源与本地配置
-		SaveStage.new(),           # 存档加载(失败可重试)
-		PlatformStage.new(),       # 平台 SDK(失败降级)
-		NetworkStage.new(),        # 登录与远程配置(失败降级)
-		AssetStage.new(),          # 预热常驻资产
-		EnterGameStage.new(),      # 进入主菜单
+		CoreServiceStage.new(),    # 核心服务启动
+		CoreAssetStage.new(),      # 核心资源预加载
 	]
-
 
 ## 顺序调度 [member _stages]。该方法为异步。
 ## [method BootStage.should_run] 为 false 时跳过;[member StageRunOutcome.should_continue]

@@ -24,9 +24,14 @@ App="*res://src/framework/autoloads/app.gd"
 
 gdscript/warnings/untyped_declaration=2
 
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/asset_groups/plugin.cfg")
+enabled=PackedStringArray("res://addons/GodotGetImage/plugin.cfg", "res://addons/SharePlugin/plugin.cfg", "res://addons/asset_groups/plugin.cfg", "res://addons/godotx_firebase/plugin.cfg")
 
 [file_customization]
 
@@ -38,8 +43,7 @@ folder_colors={
 "res://src/framework/": "red",
 "res://src/game/": "blue",
 "res://src/platform/": "orange",
-"res://src/resource/": "purple",
-"res://tests/": "yellow"
+"res://src/resource/": "purple"
 }
 
 [physics]

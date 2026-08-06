@@ -1,0 +1,365 @@
+[gd_scene format=3 uid="uid://dfywmduyxei4h"]
+
+[ext_resource type="Script" path="res://addons/asset_groups/editor/panels/resources/resource_group_panel.gd" id="1"]
+[ext_resource type="Script" path="res://addons/asset_groups/editor/panels/resources/resource_group_tree.gd" id="2"]
+[ext_resource type="PackedScene" path="res://addons/asset_groups/editor/widgets/empty_detail_state.tscn" id="3"]
+[ext_resource type="Script" uid="uid://d2s73trnjsye2" path="res://addons/asset_groups/editor/widgets/entry_path_line_edit.gd" id="4"]
+
+[sub_resource type="DPITexture" id="DPITexture_aqxkj"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_485og"]
+content_margin_left = 6.0
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 4
+border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lufpw"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.08, 0.08, 0.08, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 1)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rtry3"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0, 0, 0, 0.08)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 0.35)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7q8g0"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_880bs"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0, 0, 0, 0.08)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 0.35)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y5mrf"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="ResourcePanel" type="HSplitContainer" unique_id=2139277311]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+split_offsets = PackedInt32Array(236)
+split_offset = 236
+script = ExtResource("1")
+
+[node name="ListMargin" type="MarginContainer" parent="." unique_id=1825032074]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ListColumn" type="VBoxContainer" parent="ListMargin" unique_id=1545743111]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Toolbar" type="HBoxContainer" parent="ListMargin/ListColumn" unique_id=1634326400]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ListMargin/ListColumn/Toolbar" unique_id=1811523492]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Resource groups"
+
+[node name="AddGroupButton" type="Button" parent="ListMargin/ListColumn/Toolbar" unique_id=1396193754]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "New group"
+icon = SubResource("DPITexture_aqxkj")
+
+[node name="AddIdButton" type="Button" parent="ListMargin/ListColumn/Toolbar" unique_id=1222684620]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Add id to selected group"
+icon = SubResource("DPITexture_aqxkj")
+
+[node name="GroupTree" type="Tree" parent="ListMargin/ListColumn" unique_id=1006233161]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/selected = SubResource("StyleBoxFlat_485og")
+theme_override_styles/selected_focus = SubResource("StyleBoxFlat_485og")
+hide_root = true
+select_mode = 2
+script = ExtResource("2")
+
+[node name="DetailMargin" type="MarginContainer" parent="." unique_id=1024033724]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="DetailPanel" type="PanelContainer" parent="DetailMargin" unique_id=1430969770]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_lufpw")
+
+[node name="Body" type="Control" parent="DetailMargin/DetailPanel" unique_id=765015264]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="EmptyState" parent="DetailMargin/DetailPanel/Body" unique_id=1795985027 instance=ExtResource("3")]
+unique_name_in_owner = true
+
+[node name="GroupDetail" type="VBoxContainer" parent="DetailMargin/DetailPanel/Body" unique_id=416557077]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="GroupEditingLabel" type="Label" parent="DetailMargin/DetailPanel/Body/GroupDetail" unique_id=41222737]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+text = "Editing selected group"
+
+[node name="GroupSep1" type="HSeparator" parent="DetailMargin/DetailPanel/Body/GroupDetail" unique_id=161718282]
+layout_mode = 2
+
+[node name="GroupNameLabel" type="Label" parent="DetailMargin/DetailPanel/Body/GroupDetail" unique_id=716832181]
+layout_mode = 2
+text = "Name"
+
+[node name="GroupNameEdit" type="LineEdit" parent="DetailMargin/DetailPanel/Body/GroupDetail" unique_id=1773974235]
+unique_name_in_owner = true
+layout_direction = 2
+layout_mode = 2
+placeholder_text = "例如 boss_fight"
+clear_button_enabled = true
+text_direction = 1
+language = "en"
+
+[node name="GroupSep2" type="HSeparator" parent="DetailMargin/DetailPanel/Body/GroupDetail" unique_id=119152506]
+layout_mode = 2
+
+[node name="GroupHintPanel" type="PanelContainer" parent="DetailMargin/DetailPanel/Body/GroupDetail" unique_id=455743443]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rtry3")
+
+[node name="GroupHint" type="Label" parent="DetailMargin/DetailPanel/Body/GroupDetail/GroupHintPanel" unique_id=797055558]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+text = "Renaming moves every resource in this group to the new name. Scenes that reference this group are updated too."
+autowrap_mode = 3
+
+[node name="GroupSpacer" type="Control" parent="DetailMargin/DetailPanel/Body/GroupDetail" unique_id=855037232]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GroupRemoveButton" type="Button" parent="DetailMargin/DetailPanel/Body/GroupDetail"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_y5mrf")
+text = "Delete group"
+icon = SubResource("DPITexture_aqxkj")
+
+[node name="MultiDetail" type="VBoxContainer" parent="DetailMargin/DetailPanel/Body" unique_id=764003935]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="MultiEditingLabel" type="Label" parent="DetailMargin/DetailPanel/Body/MultiDetail" unique_id=888765975]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+text = "Multiple resources selected"
+
+[node name="MultiSep1" type="HSeparator" parent="DetailMargin/DetailPanel/Body/MultiDetail" unique_id=8256755]
+layout_mode = 2
+
+[node name="MultiCountLabel" type="Label" parent="DetailMargin/DetailPanel/Body/MultiDetail" unique_id=141061586]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 resources selected"
+
+[node name="MultiSep2" type="HSeparator" parent="DetailMargin/DetailPanel/Body/MultiDetail" unique_id=1349201433]
+layout_mode = 2
+
+[node name="MultiHintPanel" type="PanelContainer" parent="DetailMargin/DetailPanel/Body/MultiDetail" unique_id=1362696045]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rtry3")
+
+[node name="MultiHint" type="Label" parent="DetailMargin/DetailPanel/Body/MultiDetail/MultiHintPanel" unique_id=1339795567]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+text = "Drag the selection onto a group folder to move all resources, or remove them below."
+autowrap_mode = 3
+
+[node name="MultiSpacer" type="Control" parent="DetailMargin/DetailPanel/Body/MultiDetail" unique_id=1491155320]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MultiRemoveButton" type="Button" parent="DetailMargin/DetailPanel/Body/MultiDetail" unique_id=1224116379]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_7q8g0")
+text = "Remove selected resources"
+icon = SubResource("DPITexture_aqxkj")
+
+[node name="Detail" type="VBoxContainer" parent="DetailMargin/DetailPanel/Body" unique_id=504974716]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+
+[node name="EditingLabel" type="Label" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=1615785735]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+text = "Editing selected resource"
+
+[node name="Sep1" type="HSeparator" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=451114719]
+layout_mode = 2
+
+[node name="IdLabel" type="Label" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=1652857250]
+layout_mode = 2
+text = "Id"
+
+[node name="IdEdit" type="LineEdit" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=1864984220]
+unique_name_in_owner = true
+layout_direction = 2
+layout_mode = 2
+placeholder_text = "例如 main_menu（留空则取文件名）"
+clear_button_enabled = true
+text_direction = 1
+language = "en"
+
+[node name="PathLabel" type="Label" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=900512696]
+layout_mode = 2
+text = "Path"
+
+[node name="PathRow" type="HBoxContainer" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=826371647]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PathEdit" type="LineEdit" parent="DetailMargin/DetailPanel/Body/Detail/PathRow" unique_id=642350335]
+unique_name_in_owner = true
+layout_direction = 2
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "浏览、拖拽或快速打开选择，也可粘贴 res:// 路径"
+clear_button_enabled = true
+text_direction = 1
+language = "en"
+script = ExtResource("4")
+allowed_extensions = PackedStringArray("png", "jpg", "jpeg", "webp", "svg", "bmp", "tga", "wav", "ogg", "mp3", "ttf", "otf", "woff", "woff2", "glb", "gltf", "obj", "fbx", "atlas", "bin", "dat", "json", "csv", "txt", "tres", "res", "material", "shader", "gdshader")
+
+[node name="BrowseButton" type="Button" parent="DetailMargin/DetailPanel/Body/Detail/PathRow" unique_id=1627646980]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Browse the file system"
+icon = SubResource("DPITexture_aqxkj")
+
+[node name="Sep2" type="HSeparator" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=1864760053]
+layout_mode = 2
+
+[node name="GroupLabel" type="Label" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=347303736]
+layout_mode = 2
+text = "Group"
+
+[node name="GroupOption" type="OptionButton" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=1975418173]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="DragHintPanel" type="PanelContainer" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=1435228099]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_880bs")
+
+[node name="DragHint" type="Label" parent="DetailMargin/DetailPanel/Body/Detail/DragHintPanel" unique_id=1563826607]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+text = "Drag the row onto another folder to move it, or reassign here."
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=253848676]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RemoveButton" type="Button" parent="DetailMargin/DetailPanel/Body/Detail" unique_id=834703042]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_y5mrf")
+text = "Remove"
+icon = SubResource("DPITexture_aqxkj")

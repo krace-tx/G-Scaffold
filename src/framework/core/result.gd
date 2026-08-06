@@ -15,19 +15,12 @@ extends RefCounted
 ## [b]基础用法[/b]:[br]
 ## [codeblock]
 ## # 网络请求
-## var res := await App.net.post("/rank/list", params)
+## var res := await App.net.post_request("/rank/list", params)
 ## if res.is_err():
 ##     App.log.warn("rank", "拉取失败: %s" % res.error)
 ##     return
 ## var rank_data := res.value as Dictionary
 ## _show_rank(rank_data)
-##
-## # 存档加载
-## var save_res := App.save.load_profile("player_001")
-## if save_res.is_err():
-##     _use_default_profile()
-## else:
-##     _apply_profile(save_res.value)
 ## [/codeblock]
 ##
 ## [b]链式处理(多步可能失败)[/b]:[br]

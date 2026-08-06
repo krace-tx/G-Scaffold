@@ -1,0 +1,51 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/asset_groups/editor/widgets/empty_detail_state.gd" id="1"]
+
+[node name="EmptyDetailState" type="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Column" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="IconWrap" type="CenterContainer" parent="Center/Column"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Center/Column/IconWrap"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(56, 56)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Title" type="Label" parent="Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Body" type="Label" parent="Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(280, 0)
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Hints" type="VBoxContainer" parent="Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4

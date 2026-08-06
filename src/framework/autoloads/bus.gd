@@ -22,24 +22,15 @@ signal app_paused
 signal app_resumed
 #endregion
 
+#region Service domain
+## 切换语言。由 [Locale Service] 转发。
+signal locale_changed
+#endregion
+
 #region Scene domain
 ## 顶层场景切换完成(新场景 _on_enter 已跑完)。由 [SceneService] 发出。
 signal scene_changed(scene_id: StringName)
 
 ## 顶层场景切换失败(id 不存在 / 加载失败)。由 [SceneService] 发出。
 signal scene_change_failed(scene_id: StringName)
-#endregion
-
-#region UI domain
-## 界面已打开(实例入树、_on_open 已调用)。由 [UIService] 发出。
-signal ui_opened(ui_id: StringName)
-
-## 界面已关闭(_on_close 已调用、已从层里移除)。由 [UIService] 发出。
-signal ui_closed(ui_id: StringName)
-#endregion
-
-#region Platform domain
-## 激励视频看完、应发奖。由**业务代码**在拿到 [method AdResult.is_rewarded] 为真时发出
-## ([PlatformService] 只返回结果,不替业务决定发奖)。[param placement] 为广告位标识。
-signal ad_reward_granted(placement: StringName)
 #endregion

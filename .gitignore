@@ -65,3 +65,16 @@ desktop.ini
 .idea/
 *.tmp
 *~
+
+# Godot 4+ specific ignores
+.godot/
+/android/
+*.apk
+.idea/
+/iOS-Export-Dev
+/iOS-Export-Prod
+/ios
+*.aab
+/Test
+*.TMP
+

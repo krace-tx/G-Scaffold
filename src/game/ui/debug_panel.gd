@@ -41,7 +41,6 @@ func _connect_bus() -> void:
 	Bus.scene_changed.connect(func(id: StringName) -> void: _log_event("scene_changed: %s" % id))
 	Bus.ui_opened.connect(func(id: StringName) -> void: _log_event("ui_opened: %s" % id))
 	Bus.ui_closed.connect(func(id: StringName) -> void: _log_event("ui_closed: %s" % id))
-	Bus.ad_reward_granted.connect(func(p: StringName) -> void: _log_event("ad_reward_granted: %s" % p))
 	Bus.app_paused.connect(func() -> void: _log_event("app_paused"))
 	Bus.app_resumed.connect(func() -> void: _log_event("app_resumed"))
 

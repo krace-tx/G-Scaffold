@@ -29,59 +29,53 @@
 
 ```
 addons/asset_groups/
-├── plugin.gd / plugin.cfg     # 插件入口，挂到底部面板
+├── plugin.gd / plugin.cfg     # 插件入口，挂到主屏幕页签
 ├── README.md                  # 本文档
 │
-├── dock/                      # UI 层（只改 manifest，不管代码生成细节）
-│   ├── asset_group_dock.*     # 根面板：加载/保存 manifest、Generate All
-│   ├── scene_group_panel.*    # Scenes 页：场景 id + 路径 + 关联资产组
-│   ├── ui_group_panel.*       # UI 页：界面 id + 路径 + 层级 + 缓存策略
-│   ├── asset_group_panel.*    # Assets 页：分组树 + 资产 id + 路径
-│   ├── asset_group_tree.gd    # 分组树拖拽（哑组件，只发 reassign 信号）
-│   └── asset_groups_style.gd  # 编辑器样式
+├── internal/                  # 插件私有工具(不注册 class_name)
+│   └── asset_group_result.gd
+├── editor/                    # 编辑器 UI 层（只改 manifest，不管生成细节）
+│   ├── asset_group_dock.*     # 根面板：加载/保存 manifest、Scan、Generate All
+│   ├── panels/
+│   │   ├── assets/            # Assets 页：树控制器 + 详情展示 + 总调度
+│   │   ├── scenes/            # Scenes 页：场景 id + 路径 + 关联资产组
+│   │   └── ui/                # UI 页：界面 id + 路径 + 层级 + 缓存策略
+│   └── widgets/               # 共用控件：空状态、路径输入、样式
 │
-├── entities/                  # 数据模型（Resource 脚本）
-│   ├── manifest/              # 编辑态
-│   │   ├── asset_manifest.gd  # 根清单 + 分组管理 API
-│   │   ├── scene_entry.gd
-│   │   ├── ui_entry.gd
-│   │   └── asset_entry.gd
-│   ├── scene/                 # 运行时 → SceneService
-│   │   ├── scene_registry.gd
-│   │   └── scene_registry_entry.gd
-│   ├── ui/                    # 运行时 → UIService
-│   │   ├── ui_registry.gd
-│   │   └── ui_registry_entry.gd
-│   └── asset/                 # 运行时 → AssetService
-│       ├── asset_map.gd
-│       └── asset_map_entry.gd
+├── model/                     # 数据模型（Resource 脚本）
+│   ├── edit/                  # 编辑态（Dock 读写的唯一真源）
+│   │   ├── edit_asset_manifest.gd
+│   │   └── edit_scene_entry.gd / edit_ui_entry.gd / edit_asset_entry.gd
+│   └── runtime/               # 运行时注册表（Generate 产出的 .tres 形态）
+│       ├── runtime_scene_registry.gd / runtime_scene_entry.gd
+│       ├── runtime_ui_registry.gd / runtime_ui_entry.gd
+│       └── runtime_asset_registry.gd / runtime_asset_entry.gd
 │
-└── generator/                 # 生成管线
-	├── manifest_validator.gd  # Generate 前校验（硬错误 / 软警告）
-	├── manifest_scanner.gd    # 扫描目录 → 追加 manifest 条目
-	├── manifest_entries.gd    # 筛完整条目 / 草稿跳过
-	├── generator_utils.gd     # 目录创建、UID 解析
-	├── accessors_generator.gd # manifest → Scenes / Uis / Assets
-	├── registry_generator.gd  # manifest → 三份 .tres
-	└── ids_generator.gd       # manifest → SceneIds / UIIds / AssetIds
+└── codegen/                   # 扫描、校验、生成管线
+	├── manifest_scanner.gd
+	├── manifest_validator.gd
+	├── manifest_entries.gd
+	├── generator_utils.gd
+	├── accessors_generator.gd
+	└── registry_generator.gd
 ```
 
 ---
 
 ## 两层数据模型
 
-### 1. 编辑态（Manifest）— Dock 读写的唯一真源
+### 1. 编辑态（Edit）— Dock 读写的唯一真源
 
 持久化文件：`res://src/resource/data/asset_manifest.tres`
 
 | 类型 | 字段 | 说明 |
 |---|---|---|
-| `AssetManifest` | `scenes`, `uis`, `assets`, `groups` | 根资源，三页共享同一实例 |
-| `SceneEntry` | `id`, `scene_path`, `asset_group` | 顶层场景；`asset_group` 决定切场景时预载哪组资产 |
-| `UIEntry` | `id`, `scene_path`, `layer`, `cache` | 界面；层级与缓存策略供 UIService 使用 |
-| `AssetEntry` | `id`, `path`, `group` | 任意资源文件；`group` 是预载/释放的单位 |
+| `EditAssetManifest` | `scenes`, `uis`, `assets`, `groups` | 根资源，三页共享同一实例 |
+| `EditSceneEntry` | `id`, `scene_path` | 顶层场景；与 UI 一样只有 id + 路径 |
+| `EditUIEntry` | `id`, `scene_path`, `layer`, `cache` | 界面；层级与缓存策略供 UIService 使用 |
+| `EditAssetEntry` | `id`, `path`, `group` | 任意资源文件；`group` 是预载/释放的单位 |
 
-`AssetManifest` 还提供分组相关 API：
+`EditAssetManifest` 还提供分组相关 API：
 
 - `collect_groups()` — 合并显式分组 + 资产引用的组名
 - `add_group` / `remove_group` / `rename_group` — 仅在 Assets 页管理分组
@@ -89,20 +83,20 @@ addons/asset_groups/
 
 默认存在 `core` 分组（常驻资产，Boot 时预热，永不释放）。
 
-### 2. 运行时（Registry）— Generate 产物，对接框架 Service
+### 2. 运行时（Runtime）— Generate 产物，对接框架 Service
 
 Generate 时由 `RegistryGenerator` **全量重建、整份覆盖**，不做增量 merge。
 
 | 注册表 | 条目字段 | 消费方 |
 |---|---|---|
-| `SceneRegistry` | `id`, `scene_path`, `asset_group` | `SceneService` → `Scenes.xxx()` |
-| `UIRegistry` | `id`, `scene_path`, `layer`, `cache` | `UIService` → `Uis.xxx()` |
-| `AssetMap` | `id`, `path`, `group` | `AssetService` → `Assets.xxx()` |
+| `RuntimeSceneRegistry` | `id`, `scene_path` | `SceneService` → `Scenes.xxx()` |
+| `RuntimeUIRegistry` | `id`, `scene_path`, `layer`, `cache` | `UIService` → `Uis.xxx()` |
+| `RuntimeAssetRegistry` | `id`, `path`, `group` | `AssetService` → `Assets.xxx()` |
 
 **为何存路径字符串而非 PackedScene 引用？**  
 注册表 .tres 若直接引用资源本体，`load` 时会把所有条目同步拉进内存。运行时 Service 只读生成的查表类（含 `uid://` 加载键），按需加载。
 
-`UIEntry.Layer/Cache` 与 `UIRegistryEntry.Layer/Cache` **枚举按序对齐**（HUD < WINDOW < … < DEBUG），生成器经 `int()` 转换。
+`EditUIEntry.Layer/Cache` 与 `RuntimeUIEntry.Layer/Cache` **枚举按序对齐**（HUD < WINDOW < … < DEBUG），生成器经 `int()` 转换。
 
 ---
 
@@ -116,18 +110,16 @@ Generate 时由 `RegistryGenerator` **全量重建、整份覆盖**，不做增�
 
 | Tab | 做什么 | 分组权限 |
 |---|---|---|
-| **Scenes** | 登记顶层场景，选择关联 `asset_group` | 只读下拉（从 manifest 读组名） |
+| **Scenes** | 登记顶层场景（id + 路径） | 无 |
 | **UI** | 登记界面，选 Layer / Cache | 无 |
-| **Assets** | 按分组树管理资产，支持拖拽换组 | **唯一** 可新建/重命名/删除分组 |
-
-Scenes 页引用了一个不存在的分组？在 Assets 页新建即可；空组也会保留在 `groups` 数组里。
+| **Assets** | 按目录层级树管理资产（`TEXTURES_ENTITIES` → `TEXTURES` > `ENTITIES`），支持拖拽换组 | **唯一** 可新建/重命名/删除分组 |
 
 ### 顶层按钮
 
 | 按钮 | 行为 |
 |---|---|
 | **Reload** | 从磁盘重载 `asset_manifest.tres`，丢弃未保存编辑 |
-| **Scan import** | 扫描 `src/game/scenes`、`src/game/ui`、`src/assets`，追加尚未登记的资源（id = 文件名，无分组，路径已存在则跳过） |
+| **Scan import** | 扫描 `src/game/scenes`、`src/game/ui`、`src/assets`，追加尚未登记的资源（id = 文件名；Assets 的 group 按目录层级生成，如 `textures/entities/foo.png` → `TEXTURES_ENTITIES`；路径已存在则跳过） |
 | **Generate All** | 校验 → 写注册表 .tres → 写 id 常量 → 刷新文件系统 |
 
 任意子面板编辑后，Dock 自动 **保存 manifest + 刷新三页**（orchestrator 模式：子面板只 `emit changed`，根面板统一存盘）。
@@ -152,7 +144,7 @@ Generate All
 	├─ IdsGenerator.generate_and_save()
 	│     → scene_ids.gd / ui_ids.gd / asset_ids.gd
 	│
-	└─ ManifestValidator.soft_warnings()     ← 草稿跳过 / 分组引用,仅提示
+	└─ ManifestValidator.soft_warnings()     ← 草稿跳过,仅提示
 ```
 
 **空 manifest 也可 Generate**：会写出空的 `_TABLE` / `_GROUPS` 模板，`SceneService` / `UIService` / `AssetService` 可正常编译运行。业务代码里的 `Scenes.MAIN_MENU` 等常量需 Scan import 或手动登记后再 Generate 才有。
@@ -165,8 +157,7 @@ Generate All
 
 ### 软警告（不阻断）
 
-- 场景引用的 `asset_group` 下没有任何资产
-- 某分组（除 `core`）没有被任何场景引用 → 该组资产不会被预载
+- 有条目只填了 id 或路径之一（草稿行，Generate 会跳过）
 
 ---
 
@@ -191,7 +182,6 @@ Generate All
 ### SceneService
 
 - 查 `Scenes.has_id(scene_id)`、`Scenes.load_path()` 异步加载场景
-- 读 `Scenes.asset_group(scene_id)`，切场景前 `App.assets.preload_group()`，离开后 `release_group()`
 
 ### UIService
 
@@ -210,14 +200,18 @@ Generate All
 
 ## 资产分组语义
 
+Scan import 时，Assets 的 `group` 严格对应 `src/assets/` 下的目录层级：每一级目录名合法化后转大写，再用下划线连接。编辑器左侧树会按 `_` 拆成文件夹层级展示，例如 `TEXTURES_ENTITIES_CONFIG` 显示为 `TEXTURES` → `ENTITIES` → `CONFIG`。
+
 ```
 core          ← 常驻，Boot 预热，不释放
-level         ← 某场景独占，进场景预载、离场景释放
-boss_fight    ← 自定义组，由 Scenes 页绑定到具体场景
+TEXTURES/…    ← 按目录层级自动分组；业务代码按需 preload_group 或 Assets.xxx() 加载
 ```
 
-- 分组在 **Assets 页** 创建；Scenes 页通过下拉引用
-- 删除分组：组内资产归 `core`，场景的 `asset_group` 清空
+- 右键文件夹：Add child group / Rename / Delete（仅对已登记或有资产的组）
+- 工具栏文件夹按钮：在选中文件夹下新建子组（自动带上 `父路径_` 前缀）
+
+- 分组仅在 **Assets 页** 管理（资产归属）
+- 删除分组：组内资产归 `core`
 - `core` 不可删除
 
 ---
@@ -236,7 +230,7 @@ boss_fight    ← 自定义组，由 Scenes 页绑定到具体场景
 | 目标 | 操作 |
 |---|---|
 | 新增主菜单场景 | Scenes 页 Add → 填 id / 选 .tscn |
-| 关卡资产随场景加载 | Assets 页建 `level` 组并拖入资产 → Scenes 页给 level 场景选 `asset_group = level` |
+| 关卡资产按需加载 | Assets 页建组并归类 → 业务代码 `App.assets.preload_group()` 或 `Assets.xxx()` |
 | 新增设置弹窗 | UI 页 Add → 选 Layer=POPUP, Cache=DESTROY |
 | 改 id | 直接在详情面板改 → 自动存 manifest → Generate All |
 | 批量导入目录资源 | 点 **Scan import** → 检查新增条目 → Generate All |
@@ -247,6 +241,6 @@ boss_fight    ← 自定义组，由 Scenes 页绑定到具体场景
 ## 相关文档
 
 - [AssetService](../../docs/modules/asset-service.md) — 分组预载/释放
-- [SceneService](../../docs/modules/scene-service.md) — 切场景与 asset_group
+- [SceneService](../../docs/modules/scene-service.md) — 切场景生命周期
 - [UIService](../../docs/modules/ui-service.md) — 分层与缓存策略
 - [命名规范 — ID 常量类](../../docs/conventions/naming.md)
