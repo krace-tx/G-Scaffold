@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="RuntimeSceneRegistry" format=3 uid="uid://hfekrnhoeiqt"]
+
+[ext_resource type="Script" uid="uid://brkv706jj0j6r" path="res://addons/asset_groups/model/runtime/runtime_scene_entry.gd" id="1_ix6yi"]
+[ext_resource type="Script" uid="uid://6y0d8e6shf04" path="res://addons/asset_groups/model/runtime/runtime_scene_registry.gd" id="2_oko8v"]
+
+[sub_resource type="Resource" id="Resource_dj7df"]
+script = ExtResource("1_ix6yi")
+id = &"boot"
+scene_path = "res://src/game/scenes/boot.tscn"
+
+[sub_resource type="Resource" id="Resource_7g4y1"]
+script = ExtResource("1_ix6yi")
+id = &"level"
+scene_path = "res://src/game/scenes/level.tscn"
+
+[sub_resource type="Resource" id="Resource_wbwjb"]
+script = ExtResource("1_ix6yi")
+id = &"main_menu"
+scene_path = "res://src/game/scenes/main_menu.tscn"
+
+[resource]
+script = ExtResource("2_oko8v")
+entries = Array[ExtResource("1_ix6yi")]([SubResource("Resource_dj7df"), SubResource("Resource_7g4y1"), SubResource("Resource_wbwjb")])

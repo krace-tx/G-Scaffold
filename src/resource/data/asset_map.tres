@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="RuntimeAssetRegistry" format=3 uid="uid://ctovfvib5vs75"]
+
+[ext_resource type="Script" uid="uid://l4dxlafbghjh" path="res://addons/asset_groups/model/runtime/runtime_asset_entry.gd" id="1_svddv"]
+[ext_resource type="Script" uid="uid://c25e1qqs7qut0" path="res://addons/asset_groups/model/runtime/runtime_asset_registry.gd" id="2_e6s5b"]
+
+[resource]
+script = ExtResource("2_e6s5b")
