@@ -109,7 +109,7 @@ g-scaffold/
 
 ### 1. 克隆项目
 ```bash
-git clone git@github.com:krace-tx/G-Scaffold.git
+git clone https://github.com/krace-tx/G-Scaffold.git
 ```
 
 ### 2. 导入与运行
