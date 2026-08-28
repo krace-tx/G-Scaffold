@@ -110,8 +110,6 @@ g-scaffold/
 ### 1. 克隆项目
 ```bash
 git clone git@github.com:krace-tx/G-Scaffold.git
-# 或阿里云 Codeup：
-git clone git@codeup.aliyun.com:674eca2a7fefc7ded4edf677/game-framework/g-scaffold.git
 ```
 
 ### 2. 导入与运行
