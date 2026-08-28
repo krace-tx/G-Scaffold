@@ -66,11 +66,15 @@ config={
 }
 }
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="g-scaffold"
 run/main_scene="res://src/game/scenes/launcher/launcher.tscn"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -78,6 +82,7 @@ config/icon="res://icon.svg"
 Bus="*res://src/framework/autoloads/bus.gd"
 App="*res://src/framework/autoloads/app.gd"
 Game="*res://src/game/autoloads/game.gd"
+GodotIapPlugin="*uid://d3g550q0ch06y"
 
 [debug]
 
@@ -93,10 +98,15 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/GodotGoogleSignIn/plugin.cfg", "res://addons/SharePlugin/plugin.cfg", "res://addons/admob/plugin.cfg", "res://addons/apple_sign_in/plugin.cfg", "res://addons/godot-iap/plugin.cfg", "res://addons/godotx_att/plugin.cfg", "res://addons/godotx_firebase/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg")
+enabled=PackedStringArray("res://addons/GodotGoogleSignIn/plugin.cfg", "res://addons/SharePlugin/plugin.cfg", "res://addons/admob/plugin.cfg", "res://addons/godot-iap/plugin.cfg", "res://addons/godotx_att/plugin.cfg", "res://addons/godotx_firebase/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg")
 
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://src/assets/translations/i18n.zh_CN.translation", "res://src/assets/translations/i18n.en_US.translation")
+locale/fallback="en_US"
