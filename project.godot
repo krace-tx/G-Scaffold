@@ -99,22 +99,13 @@ window/handheld/orientation=1
 
 enabled=PackedStringArray("res://addons/locate_in_filesystem/plugin.cfg")
 
-[internationalization]
-
-locale/translations=PackedStringArray("res://src/assets/translations/i18n.zh_CN.translation", "res://src/assets/translations/i18n.en_US.translation")
-locale/fallback="en_US"
-
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
-textures/vram_compression/import_etc2_astc=true
-
 [file_customization]
 
 folder_colors={
 "res://addons/": "gray",
+"res://bin/": "gray",
 "res://docs/": "gray",
+"res://ios/": "gray",
 "res://src/": "teal",
 "res://src/assets/": "green",
 "res://src/framework/": "red",
@@ -125,3 +116,14 @@ folder_colors={
 "res://src/resource/": "purple",
 "res://src/test/": "purple"
 }
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://src/assets/translations/i18n.zh_CN.translation", "res://src/assets/translations/i18n.en_US.translation")
+locale/fallback="en_US"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
