@@ -1,30 +1,10 @@
-key,zh_CN,en_US,_tscn
-launcher_loading,加载中,Loading,launcher/launcher.tscn
-common_loading,加载中,Loading,common/components/loading/loading.tscn
-lobby_play,开始,Play,lobby/lobby.tscn
-lobby_level,关卡 %d,Level %d,lobby/lobby.tscn
-popup_lobby_setting_title,设置,Settings,lobby/popup/lobby_setting.tscn|level/popup/level_setting.tscn
-popup_lobby_setting_music,音乐,Music,lobby/popup/lobby_setting.tscn|level/popup/level_setting.tscn
-popup_lobby_setting_sfx,音效,Sound,lobby/popup/lobby_setting.tscn|level/popup/level_setting.tscn
-popup_lobby_setting_vibrate,振动,Vibration,lobby/popup/lobby_setting.tscn|level/popup/level_setting.tscn
-popup_lobby_setting_privacy,隐私政策,Privacy Policy,lobby/popup/lobby_setting.tscn
-popup_lobby_setting_terms,用户协议,Terms of Service,lobby/popup/lobby_setting.tscn
-popup_lobby_setting_contact,联系我们,Contact Us,lobby/popup/lobby_setting.tscn
-popup_network_retry_title,连接错误,Connection Error,common/popup/network_retry.tscn
-popup_network_retry_body,请检查网络连接,"Please check your\ninternet connection",common/popup/network_retry.tscn
-popup_update_title,发现新版本,Update Available,common/popup/update_ios.tscn|common/popup/update_android.tscn
-popup_update_body,"有新版本可用\n请更新游戏","New version is available\nPlease update your game",common/popup/update_ios.tscn|common/popup/update_android.tscn
-level_add_time,加时,Add Time,level/level.tscn|level/popup/skill_add_time.tscn
-level_hint,提示,Hint,level/level.tscn|level/popup/skill_hint.tscn
-level_preview,预览,Preview,level/level.tscn|level/popup/skill_preview.tscn
-level_title,关卡 %d,Level %d,level/level.tscn
-level_hard,困难关卡,Hard Level,level/components/hard_banner/hard_banner.tscn
-popup_skill_add_time_body,获得 90 秒,Get 90 extra seconds,level/popup/skill_add_time.tscn
-popup_skill_hint_body,自动放置一块正确拼图,Auto-place a correct piece,level/popup/skill_hint.tscn
-popup_skill_preview_body,限时查看完整图片,"View the full picture\nfor a limited time",level/popup/skill_preview.tscn
-popup_skill_load_failed_title,加载失败,Load Failed,level/popup/skill_ad_fail.tscn|level/popup/skill_retry_countdown.tscn
-popup_skill_ad_fail_body,"视频加载失败\n请重试","The video failed to load.\nPlease try again.",level/popup/skill_ad_fail.tscn
-level_preview_guide_tip,"记住完整图片，\n拖动碎片完成拼图","Remember the picture,\nand drag pieces to complete it.",level/components/level_preview/level_preview.tscn
-level_preview_dismiss_tip,点击任意位置关闭,Tap anywhere to close,level/components/level_preview/level_preview.tscn
-gallery_theme_locked,通关上一主题解锁,Complete previous themes to unlock,gallery/gallery.tscn
-gallery_level_locked,通关上一关卡解锁,Complete previous levels to unlock,gallery/gallery.tscn
+keys,en_US,zh_CN
+app_name,G-Scaffold,G-Scaffold
+common_confirm,Confirm,确认
+common_cancel,Cancel,取消
+common_retry,Retry,重试
+common_loading,Loading...,加载中...
+setting_title,Settings,设置
+setting_music,Music,音乐
+setting_sfx,Sound Effects,音效
+setting_vibrate,Vibration,振动
