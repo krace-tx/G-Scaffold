@@ -1,8 +1,8 @@
-[gd_scene format=3 uid="uid://dgscaffoldlaunch01"]
+[gd_scene format=3 uid="uid://m2iifdcr0c5m"]
 
-[ext_resource type="Script" path="res://src/game/scenes/launcher/launcher.gd" id="1_root"]
+[ext_resource type="Script" uid="uid://pjfphfyf8cix" path="res://src/game/scenes/launcher/launcher.gd" id="1_root"]
 
-[node name="Launcher" type="Control"]
+[node name="Launcher" type="Control" unique_id=1313709219]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_root")
 
-[node name="UI" type="Control" parent="."]
+[node name="UI" type="Control" parent="." unique_id=168558745]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +19,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="ColorRect" parent="UI"]
+[node name="Background" type="ColorRect" parent="UI" unique_id=1287244797]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,7 +28,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.12, 0.14, 0.18, 1)
 
-[node name="CenterContainer" type="CenterContainer" parent="UI"]
+[node name="CenterContainer" type="CenterContainer" parent="UI" unique_id=800076627]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,30 +36,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/CenterContainer" unique_id=34580837]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Title" type="Label" parent="UI/CenterContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="UI/CenterContainer/VBoxContainer" unique_id=435265587]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "G-Scaffold"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="UI/CenterContainer/VBoxContainer"]
+[node name="Subtitle" type="Label" parent="UI/CenterContainer/VBoxContainer" unique_id=1195868744]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.8, 1)
 theme_override_font_sizes/font_size = 18
 text = "Enterprise Game Architecture Template"
 horizontal_alignment = 1
 
-[node name="ProgressBar" type="ProgressBar" parent="UI/CenterContainer/VBoxContainer"]
+[node name="ProgressBar" type="ProgressBar" parent="UI/CenterContainer/VBoxContainer" unique_id=1294530516]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 value = 10.0
 
-[node name="StatusLabel" type="Label" parent="UI/CenterContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="UI/CenterContainer/VBoxContainer" unique_id=96900724]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 14
