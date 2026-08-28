@@ -4,8 +4,8 @@ extends BaseScene
 ## 演示主场景。
 ## 展示框架核心服务（SceneService, AudioService, SettingManager）的调用范例。
 
-@onready var _env_label: Label = $UI/Margin/VBox/InfoCard/EnvLabel
-@onready var _host_label: Label = $UI/Margin/VBox/InfoCard/HostLabel
+@onready var _env_label: Label = $UI/Margin/VBox/InfoCard/Margin/VBox/EnvLabel
+@onready var _host_label: Label = $UI/Margin/VBox/InfoCard/Margin/VBox/HostLabel
 @onready var _log_label: Label = $UI/Margin/VBox/LogCard/Scroll/LogLabel
 
 @onready var _play_bgm_btn: Button = $UI/Margin/VBox/Actions/Row1/PlayBgmBtn
