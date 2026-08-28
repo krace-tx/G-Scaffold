@@ -82,29 +82,13 @@ theme_override_constants/separation = 16
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="PlayBgmBtn" type="Button" parent="UI/Margin/VBox/Actions/Row1"]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "🎵 Play BGM"
-
-[node name="PlaySfxBtn" type="Button" parent="UI/Margin/VBox/Actions/Row1"]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "🔊 Play SFX"
-
-[node name="Row2" type="HBoxContainer" parent="UI/Margin/VBox/Actions"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="OpenSettingBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
+[node name="OpenSettingBtn" type="Button" parent="UI/Margin/VBox/Actions/Row1"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "⚙️ Open Setting Popup"
 
-[node name="ShowToastBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
+[node name="ShowToastBtn" type="Button" parent="UI/Margin/VBox/Actions/Row1"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
