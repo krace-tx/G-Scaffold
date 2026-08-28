@@ -82,7 +82,6 @@ config/icon="res://icon.svg"
 Bus="*res://src/framework/autoloads/bus.gd"
 App="*res://src/framework/autoloads/app.gd"
 Game="*res://src/game/autoloads/game.gd"
-GodotIapPlugin="*uid://d3g550q0ch06y"
 
 [debug]
 
@@ -98,7 +97,12 @@ window/handheld/orientation=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/GodotGoogleSignIn/plugin.cfg", "res://addons/SharePlugin/plugin.cfg", "res://addons/admob/plugin.cfg", "res://addons/godot-iap/plugin.cfg", "res://addons/godotx_att/plugin.cfg", "res://addons/godotx_firebase/plugin.cfg", "res://addons/locate_in_filesystem/plugin.cfg")
+enabled=PackedStringArray("res://addons/locate_in_filesystem/plugin.cfg")
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://src/assets/translations/i18n.zh_CN.translation", "res://src/assets/translations/i18n.en_US.translation")
+locale/fallback="en_US"
 
 [rendering]
 
@@ -106,7 +110,18 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 
-[internationalization]
+[file_customization]
 
-locale/translations=PackedStringArray("res://src/assets/translations/i18n.zh_CN.translation", "res://src/assets/translations/i18n.en_US.translation")
-locale/fallback="en_US"
+folder_colors={
+"res://addons/": "gray",
+"res://docs/": "gray",
+"res://src/": "teal",
+"res://src/assets/": "green",
+"res://src/framework/": "red",
+"res://src/game/": "blue",
+"res://src/game/catalog/": "orange",
+"res://src/game/entities/": "yellow",
+"res://src/game/scenes/": "pink",
+"res://src/resource/": "purple",
+"res://src/test/": "purple"
+}
