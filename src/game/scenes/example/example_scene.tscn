@@ -98,27 +98,17 @@ text = "🔊 Play SFX"
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="ShowAdBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "🎬 Show Rewarded Ad"
-
-[node name="TrackEventBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "📊 Track Event"
-
-[node name="Row3" type="HBoxContainer" parent="UI/Margin/VBox/Actions"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="OpenSettingBtn" type="Button" parent="UI/Margin/VBox/Actions/Row3"]
+[node name="OpenSettingBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "⚙️ Open Setting Popup"
+
+[node name="ShowToastBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "💬 Show Toast"
 
 [node name="LogCard" type="PanelContainer" parent="UI/Margin/VBox"]
 layout_mode = 2
