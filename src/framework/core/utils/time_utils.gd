@@ -1,74 +1,63 @@
 class_name TimeUtils
 extends RefCounted
 
-## 时间处理与安全挂起工具类。
+## 时间格式化，以及绑定节点生命周期的安全等待。
 ##
-## 提供毫秒/秒的格式化显示，以及与节点生命周期强绑定的安全异步等待（Wait）功能。
-## 详见 docs/conventions/coding-style.md 中关于 await 纪律的说明。
+## [method now_string] 走系统墙钟（日志在校时前就要能用）；游戏权威时间是 [TimeService]。
+## [method wait_safe] 在 await 恢复后校验节点仍存活，避免 Use-After-Free。
 
 #region Constants & Enums
-const SECONDS_PER_MINUTE: int = 60
-const SECONDS_PER_HOUR: int = 3600
-const MS_PER_SECOND: int = 1000
+const _SECONDS_PER_MINUTE: int = 60
+const _SECONDS_PER_HOUR: int = 3600
+const _MS_PER_SECOND: int = 1000
 #endregion
 
 #region Public API
-## 返回当前**本地**日期时间字符串，格式 [code]YYYY-MM-DD HH:MM:SS.mmm[/code]（含毫秒）。[br]
-## 用于日志时间戳等墙钟场景，走系统时钟——不是游戏权威时间（那是 [TimeService]，
-## 且日志早于校时就要能用），故有意用系统时钟而非 App.time。
+## 当前本地墙钟，格式 [code]YYYY-MM-DD HH:MM:SS.mmm[/code]。
 static func now_string() -> String:
-	# 本地时间到秒 + 单独取毫秒:毫秒(秒内小数)与时区无关，可安全拼到本地时间串后。
 	var datetime := Time.get_datetime_string_from_system(false, true)
-	var ms := int(Time.get_unix_time_from_system() * MS_PER_SECOND) % MS_PER_SECOND
+	var ms := int(Time.get_unix_time_from_system() * _MS_PER_SECOND) % _MS_PER_SECOND
 	return "%s.%03d" % [datetime, ms]
 
 
-## 将秒数格式化为 MM:SS 字符串（例如 03:05）。[br]
-## 常用于倒计时或局内游戏时间显示。
+## 秒数 → [code]MM:SS[/code]（例如 03:05）。
 static func format_mm_ss(total_seconds: int) -> String:
-	@warning_ignore("integer_division")   # 有意:取整分钟
-	var m := total_seconds / SECONDS_PER_MINUTE
-	var s := total_seconds % SECONDS_PER_MINUTE
-	return "%02d:%02d" % [m, s]
+	@warning_ignore("integer_division")
+	var minutes := total_seconds / _SECONDS_PER_MINUTE
+	var seconds := total_seconds % _SECONDS_PER_MINUTE
+	return "%02d:%02d" % [minutes, seconds]
 
 
-## 将秒数格式化为 HH:MM:SS 字符串（例如 01:25:09）。[br]
-## 常用于长线挂机奖励倒计时。
+## 秒数 → [code]HH:MM:SS[/code]（例如 01:25:09）。
 static func format_hh_mm_ss(total_seconds: int) -> String:
-	@warning_ignore("integer_division")   # 有意:取整小时
-	var h := total_seconds / SECONDS_PER_HOUR
-	var rem := total_seconds % SECONDS_PER_HOUR
-	@warning_ignore("integer_division")   # 有意:取整分钟
-	var m := rem / SECONDS_PER_MINUTE
-	var s := rem % SECONDS_PER_MINUTE
-	return "%02d:%02d:%02d" % [h, m, s]
+	@warning_ignore("integer_division")
+	var hours := total_seconds / _SECONDS_PER_HOUR
+	var remainder := total_seconds % _SECONDS_PER_HOUR
+	@warning_ignore("integer_division")
+	var minutes := remainder / _SECONDS_PER_MINUTE
+	var seconds := remainder % _SECONDS_PER_MINUTE
+	return "%02d:%02d:%02d" % [hours, minutes, seconds]
 
 
-## 安全的异步等待（防 Use-After-Free）。[br]
-## 挂起当前协程 [param seconds] 秒。在恢复执行时，会自动校验传入的 [param node] 是否依然存活。[br]
-## 该方法为异步。返回 [Result]：成功表示等待结束且节点存活；失败表示节点在等待期间已被销毁。
+## 挂起 [param seconds] 秒；恢复后若 [param node] 已销毁则失败，调用方必须停下来。[br]
 ##
 ## [codeblock]
 ## var wait_res := await TimeUtils.wait_safe(self, 2.0)
-## if wait_res.is_err(): return # 节点已死，直接退出，绝不继续执行后续逻辑
-## 
+## if wait_res.is_err():
+##     return
 ## _fire_projectile()
 ## [/codeblock]
 static func wait_safe(node: Node, seconds: float) -> Result:
-	# 1. 卫语句：初始状态校验
 	if not is_instance_valid(node):
-		return Result.err("Wait 失败: 传入的节点为空或已失效")
-		
+		return Result.err("Wait failed: node is invalid.")
 	var tree := node.get_tree()
 	if tree == null:
-		return Result.err("Wait 失败: 节点当前不在场景树中")
-		
-	# 2. 执行真正的挂起等待 ( Godot 原生 timer )
+		return Result.err("Wait failed: node is not in the scene tree.")
+
+	# process_always=false：随 SceneTree 暂停，避免暂停期间仍把等待走完。
 	await tree.create_timer(seconds, false).timeout
-	
-	# 3. 核心防御：恢复执行后的生命周期二次校验
+
 	if not is_instance_valid(node):
-		return Result.err("Wait 中断: 节点在异步等待期间已被销毁")
-		
+		return Result.err("Wait failed: node was freed.")
 	return Result.ok()
 #endregion

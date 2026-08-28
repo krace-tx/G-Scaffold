@@ -10,56 +10,32 @@ config_version=5
 
 [application]
 
-config/name="GScaffold"
-run/main_scene="res://src/game/scenes/boot.tscn"
-config/features=PackedStringArray("4.6", "Forward Plus")
+config/name="g-scaffold"
+run/main_scene="res://src/game/scenes/launcher/launcher.tscn"
+config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 Bus="*res://src/framework/autoloads/bus.gd"
 App="*res://src/framework/autoloads/app.gd"
+Platform="*res://src/game/autoloads/platform.gd"
+Game="*res://src/game/autoloads/game.gd"
 
 [debug]
 
-gdscript/warnings/untyped_declaration=2
+gdscript/warnings/untyped_declaration=1
 
 [display]
 
-window/size/viewport_width=1920
-window/size/viewport_height=1080
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/GodotGetImage/plugin.cfg", "res://addons/SharePlugin/plugin.cfg", "res://addons/asset_groups/plugin.cfg", "res://addons/godotx_firebase/plugin.cfg")
-
-[file_customization]
-
-folder_colors={
-"res://addons/": "gray",
-"res://scripts/": "gray",
-"res://src/": "teal",
-"res://src/assets/": "green",
-"res://src/framework/": "red",
-"res://src/game/": "blue",
-"res://src/platform/": "orange",
-"res://src/resource/": "purple"
-}
-
-[physics]
-
-3d/physics_engine="Jolt Physics"
-
-[registry_studio]
-
-scene_registry="res://src/resource/data/scene_registry.tres"
-ui_registry="res://src/resource/data/ui_registry.tres"
-asset_registry="res://src/resource/data/asset_map.tres"
-scene_output="res://src/resource/generated/scenes.gd"
-ui_output="res://src/resource/generated/uis.gd"
-asset_output="res://src/resource/generated/assets.gd"
-plugin_path="res://addons/godot_registry_studio"
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
 
 [rendering]
 
-rendering_device/driver.windows="d3d12"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true

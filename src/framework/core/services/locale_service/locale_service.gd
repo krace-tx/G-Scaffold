@@ -1,81 +1,84 @@
 class_name LocaleService
 extends RefCounted
 
-## 多语言与本地化服务。
+## 多语言门面。表由项目设置挂到 [TranslationServer]；这里只选语言并 [method TranslationServer.set_locale]。
 ##
-## 负责管理当前语言设置、保存用户语言偏好、以及与 Godot 的 TranslationServer 交互。
-## 改变语言时会发出 Bus.locale_changed 信号，以便 UI 动态刷新。
+## 静态 UI：原生控件 text 填 key，保持 Auto Translate。[br]
+## 动态文案：直接 [method Object.tr] / [method Object.tr_n]，再 [code]%[/code] 填值。[br]
+## 切语言后发 [signal Bus.locale_changed]。
 
-#region Constants & Enums
-## 支持的语言列表，键为语言代码，值为显示名称
-const SUPPORTED_LOCALES: Dictionary = {
-	"zh_CN": "简体中文",
-	"en": "English",
-	"ar": "العربية"
-}
+#region State
+## 当前语言。
+var current_language: LocaleConfig.Language = LocaleConfig.Language.EN_US
+## 项目里已加载且能识别的语言。
+var languages: Array[LocaleConfig.Language] = []
 
-## 默认语言代码
-const DEFAULT_LOCALE: String = "ar"
+var _config: LocaleConfig
 #endregion
-
-#region Exports & State
-## 多语言持久化配置
-var _locale_persist_item := PersistItem.new(
-	"LocaleService-locale_setting",                            ## 资源 ID
-	"user://framework/locale_service/locale_setting.tres",     ## 磁盘持久化路径(user://)
-	"",                                                        ## 本地兜底资源(res://),无需兜底
-	"", "GET",                                                 ## 拉取地址与方法,纯本地设置无需拉取
-	"", "POST",                                                ## 推送地址与方法,纯本地设置无需推送
-	{
-		"": "res://src/framework/core/services/locale_service/locale_setting.gd"  ## 字段 → tres 声明脚本映射
-	}
-)
-var _current_locale_setting: LocaleSetting = LocaleSetting.new(DEFAULT_LOCALE)
-#endregion
-
-func _init() -> void:
-	load_locale_setting()
 
 #region Public API
-## 初始化语言设置
-func load_locale_setting() -> void:
-	var saved_locale_setting: LocaleSetting = null
-	if App.persist:
-		saved_locale_setting = App.persist.read(_locale_persist_item, PersistService.ReadMode.MEMORY_THEN_DISK)
-	
-	if saved_locale_setting is LocaleSetting and SUPPORTED_LOCALES.has(saved_locale_setting.locale):
-		set_locale(saved_locale_setting.locale, false)
-	else:
-		# 自动检测系统语言，如果不支持则退化为默认语言
-		var system_locale := OS.get_locale_language()
-		if SUPPORTED_LOCALES.has(system_locale):
-			set_locale(system_locale, false)
-		else:
-			set_locale(DEFAULT_LOCALE, false)
+## 读取 [TranslationServer] 已挂载的表，选定初始语言。[param config] 为空则用 [LocaleConfig] 默认值。
+func initialize(config: LocaleConfig = null) -> Result:
+	_config = config if config != null else LocaleConfig.new()
+	languages.clear()
+	for locale in TranslationServer.get_loaded_locales():
+		var language := _match_language(locale, _all_languages(), 10)
+		if language >= 0 and language not in languages:
+			languages.append(language as LocaleConfig.Language)
+	if languages.is_empty():
+		return Result.err("Initialize failed: no translations in Project Settings > Localization.")
+
+	var start := _pick_start_language()
+	if start < 0:
+		return Result.err("Initialize failed: no usable language.")
+	return set_language(start as LocaleConfig.Language)
 
 
-## 获取当前语言代码
-func get_current_locale_setting() -> String:
-	return _current_locale_setting.locale
-
-
-## 设置当前语言代码
-func set_locale(locale: String, save_to_disk: bool = true) -> void:
-	if not SUPPORTED_LOCALES.has(locale):
-		App.log.warn("LocaleService", "Unsupported locale: %s, falling back to default" % locale)
-		locale = DEFAULT_LOCALE
-		
-	_current_locale_setting.locale = locale
+## 切换当前语言。成功后发 [signal Bus.locale_changed]。
+func set_language(language: LocaleConfig.Language) -> Result:
+	if language not in languages:
+		return Result.err("Set language failed: language is not loaded.")
+	var locale := _godot_locale(language)
+	if current_language == language and TranslationServer.get_locale() == locale:
+		return Result.ok()
+	current_language = language
 	TranslationServer.set_locale(locale)
-	
-	if save_to_disk and App.persist:
-		App.persist.write(_locale_persist_item, PersistService.WriteMode.MEMORY_AND_DISK, _current_locale_setting)
-		
-	App.log.info("LocaleService", "Locale changed to: %s (%s)" % [locale, SUPPORTED_LOCALES[locale]])
-	Bus.locale_changed.emit(locale)
+	Bus.locale_changed.emit()
+	return Result.ok()
+#endregion
+
+#region Internal
+func _godot_locale(language: LocaleConfig.Language) -> String:
+	return TranslationServer.standardize_locale(LocaleConfig.locale_tag(language))
 
 
-## 获取所有支持的语言
-func get_supported_locales() -> Dictionary:
-	return SUPPORTED_LOCALES
+func _all_languages() -> Array[LocaleConfig.Language]:
+	var out: Array[LocaleConfig.Language] = []
+	for i in LocaleConfig.Language.size():
+		out.append(i as LocaleConfig.Language)
+	return out
+
+
+## [method TranslationServer.compare_locales] 最高分且不低于 [param min_score]（10 为完全匹配）。
+func _match_language(locale: String, candidates: Array[LocaleConfig.Language], min_score: int) -> int:
+	var best := -1
+	var best_score := 0
+	for language in candidates:
+		var score := TranslationServer.compare_locales(locale, _godot_locale(language))
+		if score > best_score:
+			best_score = score
+			best = language as int
+	return best if best_score >= min_score else -1
+
+
+## [member LocaleConfig.default_language] → 设备语言 → 已加载第一门。
+func _pick_start_language() -> int:
+	if _config != null and _config.default_language in languages:
+		return _config.default_language as int
+	var system := _match_language(OS.get_locale(), languages, 1)
+	if system >= 0:
+		return system
+	if not languages.is_empty():
+		return languages[0] as int
+	return -1
 #endregion

@@ -1,13 +1,14 @@
 class_name AudioService
 extends Node
 
-## 音频服务:BGM/SFX 分组总线音量、BGM 跨场景交叉淡入淡出、SFX 播放器池。
+## 音频服务：提供 BGM/SFX 分组总线音量控制、BGM 跨场景交叉淡变、SFX 播放器池复用功能。
 ##
-## 全项目播声音一律走这里,不要各自 new AudioStreamPlayer——那样音量分组、
-## 跨场景 BGM 连续、播放器复用全失控。见 docs/modules/audio-service.md。
+## 建议全项目的音频播放均通过此服务调用，避免直接实例化 AudioStreamPlayer。
+## 统一管理可确保音量分组生效、跨场景 BGM 无缝衔接以及播放器资源的有效复用。
 ##
-## BGM 与 SFX 各走独立音频总线(自动创建并 send 到 Master),这样设置菜单能分别
-## 调"音乐音量""音效音量"。挂在 App 下常驻,BGM 才能跨场景不中断。
+## BGM 与 SFX 分别使用独立的音频总线（自动创建并路由至 Master），
+## 以便在设置菜单中独立调节“音乐”与“音效”音量。
+## 本服务需作为常驻节点（如挂载在 App 下），以保证 BGM 在场景切换时不中断。
 
 #region Constants & Enums
 const _BUS_MASTER: String = "Master"
@@ -63,12 +64,16 @@ func _ready() -> void:
 	NodeUtils.mount_required(_sfx_player, self, "GameStartPlayer")
 #endregion
 
-#region Public API - Core BGM / SFX
+#region Public API
+#region BGM Playback
 ## 播放背景音乐,与当前曲目交叉淡变。**同一曲目正在播放则不打断**(跨场景连续的关键)。
-func play_bgm_by_path(path: String, volume: float, fade: float = _DEFAULT_FADE) -> void:
-	var stream := load_audio(path)
+func play_bgm_by_path(path: String, volume: float = 0.0, fade: float = _DEFAULT_FADE) -> void:
+	var stream: AudioStream = await load_audio(path)
 	if stream == null:
 		return
+
+	# 确保背景音乐强制开启循环播放
+	_ensure_stream_loop(stream)
 
 	var active := _bgm_players[_bgm_active]
 	if active.stream == stream and active.playing:
@@ -87,6 +92,7 @@ func play_bgm_by_path(path: String, volume: float, fade: float = _DEFAULT_FADE) 
 
 	_bgm_active = 1 - _bgm_active
 
+
 ## 停止背景音乐(淡出)。
 func stop_bgm(fade: float = _DEFAULT_FADE) -> void:
 	var active := _bgm_players[_bgm_active]
@@ -96,15 +102,18 @@ func stop_bgm(fade: float = _DEFAULT_FADE) -> void:
 	_bgm_tween = create_tween()
 	_bgm_tween.tween_property(active, "volume_db", _SILENT_DB, fade)
 	_bgm_tween.tween_callback(active.stop)
+#endregion
 
+
+#region SFX Playback
 ## 播放指定路径的音效，包含同音抑制和分贝调节。
-func play_sfx_by_path(path: String, volume: int) -> void:
+func play_sfx_by_path(path: String, volume: float = 0.0) -> void:
 	var now := Time.get_ticks_msec()
 	if _last_played_times.has(path) and (now - _last_played_times[path] < MIN_INTERVAL_MS):
 		return
 	_last_played_times[path] = now
 
-	var stream := load_audio(path)
+	var stream: AudioStream = await load_audio(path)
 	if stream == null:
 		return
 
@@ -115,8 +124,10 @@ func play_sfx_by_path(path: String, volume: int) -> void:
 	p.stream = stream
 	p.volume_db = volume
 	p.play()
+#endregion
 
 
+#region Bus Volume & Mute
 ## 设置某总线的线性音量 [0,1](供设置菜单调"音乐/音效音量")。总线名用 BGM/SFX/Master。
 func set_bus_volume(bus: String, linear: float) -> void:
 	var idx := AudioServer.get_bus_index(bus)
@@ -131,17 +142,72 @@ func get_bus_volume(bus: String) -> float:
 	if idx == -1:
 		return 0.0
 	return db_to_linear(AudioServer.get_bus_volume_db(idx))
+
+
+## 设置某总线静音状态。总线名用 BGM/SFX/Master。
+func set_bus_mute(bus: String, mute: bool) -> void:
+	var idx := AudioServer.get_bus_index(bus)
+	if idx == -1:
+		return
+	AudioServer.set_bus_mute(idx, mute)
+
+
+## 获取某总线是否处于静音状态。
+func is_bus_muted(bus: String) -> bool:
+	var idx := AudioServer.get_bus_index(bus)
+	if idx == -1:
+		return false
+	return AudioServer.is_bus_mute(idx)
 #endregion
 
-#region Public API - Game BGM / SFX Helpers
-## 加载音频资源（复用缓存）
+
+#region Music & SFX Switches
+## 开关背景音乐（设置 BGM 总线静音状态）。
+func set_music_enabled(enabled: bool) -> void:
+	set_bus_mute(_BUS_BGM, not enabled)
+
+
+## 背景音乐是否开启。
+func is_music_enabled() -> bool:
+	return not is_bus_muted(_BUS_BGM)
+
+
+## 开关音效（设置 SFX 总线静音状态）。
+func set_sfx_enabled(enabled: bool) -> void:
+	set_bus_mute(_BUS_SFX, not enabled)
+
+
+## 音效是否开启。
+func is_sfx_enabled() -> bool:
+	return not is_bus_muted(_BUS_SFX)
+#endregion
+
+
+#region Playback State Control
+## 暂停/恢复全部播放器（窗口失焦用 stream_paused，不改音量）。
+func set_paused(paused: bool) -> void:
+	for p in _bgm_players:
+		p.stream_paused = paused
+	for p in _sfx_pool:
+		p.stream_paused = paused
+	if _sfx_player:
+		_sfx_player.stream_paused = paused
+#endregion
+
+
+#region Asset Loading
+## 异步加载音频资源（复用 App.asset 缓存）
 func load_audio(path: String) -> AudioStream:
 	if path.is_empty():
 		return null
-	if not ResourceLoader.exists(path):
-		App.log.warn("AudioService", "Audio file not found: %s" % path)
+	
+	var result := await App.asset.load(path)
+	if result.is_err():
+		App.log.warn("AudioService", "Audio file not found or load failed: %s" % path)
 		return null
-	return ResourceLoader.load(path, "AudioStream", ResourceLoader.CACHE_MODE_REUSE)
+		
+	return result.value as AudioStream
+#endregion
 #endregion
 
 #region Internal
@@ -160,4 +226,13 @@ func _ensure_bus(bus_name: String) -> void:
 	AudioServer.set_bus_name(idx, bus_name)
 	AudioServer.set_bus_send(idx, _BUS_MASTER)
 
+
+## 确保任何类型的音频流对象在作为 BGM 播放时均开启循环播放
+static func _ensure_stream_loop(stream: AudioStream) -> void:
+	if stream is AudioStreamMP3:
+		stream.loop = true
+	elif stream is AudioStreamOggVorbis:
+		stream.loop = true
+	elif stream is AudioStreamWAV:
+		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 #endregion

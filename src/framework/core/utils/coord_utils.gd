@@ -66,7 +66,7 @@ static func degrees_to_dir(degrees: float) -> Vector2:
 static func get_real_global_vertex(node: Control, normalized_offset: Vector2 = Vector2(0.5, 0.5)) -> Result:
 	# 卫语句：拦截空指针 / 已销毁节点
 	if not is_instance_valid(node):
-		return Result.err("顶点坐标计算失败：目标节点为空或已被销毁")
+		return Result.err("Vertex failed: node is invalid.")
 
 	# size 是「未缩放」的局部尺寸，归一化偏移乘以它得到局部像素坐标。
 	var local_point := node.size * normalized_offset
@@ -83,7 +83,7 @@ static func get_real_global_vertex(node: Control, normalized_offset: Vector2 = V
 static func get_real_global_corners(node: Control) -> Result:
 	# 卫语句：拦截空指针 / 已销毁节点
 	if not is_instance_valid(node):
-		return Result.err("角点坐标计算失败：目标节点为空或已被销毁")
+		return Result.err("Corners failed: node is invalid.")
 
 	# 局部空间里四角固定为：(0,0) 左上、(w,0) 右上、(w,h) 右下、(0,h) 左下。
 	# size 不随 scale 变化，缩放/pivot/旋转/父级变换全部由下面的矩阵一次性吃进去。
@@ -95,8 +95,4 @@ static func get_real_global_corners(node: Control) -> Result:
 	corners.append(xform * Vector2(s.x, s.y))    # 右下
 	corners.append(xform * Vector2(0.0, s.y))    # 左下
 	return Result.ok(corners)
-#endregion
-
-#region Internal
-# 目前 CoordUtils 的公开 API 足够简单，无需内部私有辅助函数。
 #endregion

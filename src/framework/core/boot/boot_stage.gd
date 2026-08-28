@@ -2,39 +2,62 @@
 class_name BootStage
 extends RefCounted
 
-## 启动管线单个阶段的基础契约。
-##
-## 子类必须实现 [method get_name] 与 [method run];可选覆盖 [method should_run]、
-## [method failure_strategy]。调度/计时/日志/失败策略执行由 [BootPipeline] +
-## [StageRunner] 统一负责。详见 [code]docs/architecture/boot-sequence.md[/code]。
+## 启动管线单个阶段。
+## 子类实现 [method id] 与 [method run]；失败时默认终止管线。
 
-#region Constants & Enums
-## 启动日志统一 tag,供各 Stage 与 [StageRunner] 打 [code][boot][/code] 日志。
-const LOG_TAG: String = "boot"
-#endregion
+enum Failure {
+	STOP,      ## 记 error，终止后续阶段
+	CONTINUE,  ## 记 warn，继续后续阶段（SDK 等可降级场景）
+}
 
-#region Public API
-## 阶段标识,用于日志与 [signal BootContext.progress_changed] 的 [param stage_name]。
+## 阶段标识，用作日志 tag 与进度输出。
 @abstract
-func get_name() -> String
+func id() -> String
 
 
-## 是否执行本阶段。默认 true;可按平台或功能开关返回 false —— [BootPipeline] 会跳过,
-## 不调用 [method run],也不记失败。
-func should_run(_ctx: BootContext) -> bool:
-	return true
+## 本阶段 [method run] 失败时怎么走。默认 STOP。
+func on_fail() -> Failure:
+	return Failure.STOP
 
 
-## [method run] 返回 [code]Result.err[/code] 时 [StageRunner] 的处理方式。
-## 默认 [enum BootFailureStrategy.Kind.FATAL](致命,终止管线);子类按业务改为
-## [code]RETRY[/code] / [code]DEGRADE[/code] / [code]IGNORE[/code]。
-func failure_strategy() -> BootFailureStrategy.Kind:
-	return BootFailureStrategy.Kind.FATAL
+## 阶段进度权重（默认 1.0；耗时长的阶段如资源下载可配置为更高权重以分配更多进度条比例）。
+func weight() -> float:
+	return 1.0
 
 
-## 执行阶段逻辑:创建/初始化服务、挂树、预热等。该方法为异步(子类可 [code]await[/code])。
-## 成功返回 [method Result.ok],可预期失败返回 [method Result.err] 并由
-## [method failure_strategy] 决定后续行为。
-@abstract
-func run(_ctx: BootContext) -> Result
-#endregion
+## 执行本阶段。成功 [method Result.ok]，可预期失败 [method Result.err]。
+## [param on_progress] 为阶段内部进度汇报回调（签名 [code]func(ratio: float)[/code]，0.0 ~ 1.0）。
+## 基类带 await，[method BootPipeline.run] 里 await stage.run() 才合法；子类可再 await。
+func run(_on_progress: Callable = Callable()) -> Result:
+	await Engine.get_main_loop().process_frame
+	return Result.err("Override BootStage.run.")
+
+
+## 以 [method id] 为 tag 打日志。
+## boot 创建 [member App.log] 之前走 print，避免启动首条日志丢失。
+## 不叫 log：会遮蔽全局自然对数 [method @GlobalScope.log]。
+func info(message: String) -> void:
+	_emit(LogService.LogLevel.INFO, message)
+
+
+func warn(message: String) -> void:
+	_emit(LogService.LogLevel.WARN, message)
+
+
+func error(message: String) -> void:
+	_emit(LogService.LogLevel.ERROR, message)
+
+
+func _emit(level: LogService.LogLevel, message: String) -> void:
+	var tag := id()
+	if App.log == null:
+		LogService.print_raw(level, tag, message)
+		return
+
+	match level:
+		LogService.LogLevel.ERROR:
+			App.log.error(tag, message)
+		LogService.LogLevel.WARN:
+			App.log.warn(tag, message)
+		_:
+			App.log.info(tag, message)

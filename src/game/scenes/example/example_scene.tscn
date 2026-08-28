@@ -1,0 +1,137 @@
+[gd_scene format=3 uid="uid://dgscaffoldexam01"]
+
+[ext_resource type="Script" path="res://src/game/scenes/example/example_scene.gd" id="1_root"]
+
+[node name="ExampleScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_root")
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.1, 0.14, 1)
+
+[node name="Margin" type="MarginContainer" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="UI/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Header" type="Label" parent="UI/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "G-Scaffold Framework Suite"
+horizontal_alignment = 1
+
+[node name="InfoCard" type="PanelContainer" parent="UI/Margin/VBox"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/Margin/VBox/InfoCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="UI/Margin/VBox/InfoCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnvLabel" type="Label" parent="UI/Margin/VBox/InfoCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+text = "Environment: LOCAL"
+
+[node name="HostLabel" type="Label" parent="UI/Margin/VBox/InfoCard/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1)
+text = "API Host: http://127.0.0.1:8000"
+
+[node name="Actions" type="VBoxContainer" parent="UI/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Row1" type="HBoxContainer" parent="UI/Margin/VBox/Actions"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PlayBgmBtn" type="Button" parent="UI/Margin/VBox/Actions/Row1"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🎵 Play BGM"
+
+[node name="PlaySfxBtn" type="Button" parent="UI/Margin/VBox/Actions/Row1"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🔊 Play SFX"
+
+[node name="Row2" type="HBoxContainer" parent="UI/Margin/VBox/Actions"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ShowAdBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🎬 Show Rewarded Ad"
+
+[node name="TrackEventBtn" type="Button" parent="UI/Margin/VBox/Actions/Row2"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "📊 Track Event"
+
+[node name="Row3" type="HBoxContainer" parent="UI/Margin/VBox/Actions"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="OpenSettingBtn" type="Button" parent="UI/Margin/VBox/Actions/Row3"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⚙️ Open Setting Popup"
+
+[node name="LogCard" type="PanelContainer" parent="UI/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Scroll" type="ScrollContainer" parent="UI/Margin/VBox/LogCard"]
+layout_mode = 2
+
+[node name="LogLabel" type="Label" parent="UI/Margin/VBox/LogCard/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.6, 0.9, 0.6, 1)
+theme_override_font_sizes/font_size = 14
+text = "[Console logs will appear here]"
+autowrap_mode = 2

@@ -1,318 +1,250 @@
 class_name PersistService
 extends RefCounted
 
-## 数据持久化服务，支持内存缓存、磁盘持久化、服务器上传下载。
+## 持久化调度服务中心（Facade / 编排根）。[br]
+##
+## 统筹协调 [MemoryDriver]、[DiskDriver]、[RemoteDriver] 三大底层存储驱动，
+## 基于 [StorageItem] 元数据配置与 [ReadMode] / [WriteMode] 策略，提供统一的异步读 (Read)、写 (Write)、删 (Delete) 调度门面。
 
+#region Enums
+## 存储介质分层定义（Multi-tier Storage）
+enum Tier {
+	MEMORY,  ## 内存缓存层（L1，基于 MemoryDriver）
+	DISK,    ## 本地磁盘持久化层（L2，可读写，基于 DiskDriver 访问 user://）
+	REMOTE,  ## 远端网络接口层（L3，基于 RemoteDriver）
+}
+#endregion
 
-#region Constants & Enums
-enum ReadMode {
-	MEMORY_ONLY,                  ## 只读内存
-	MEMORY_THEN_DISK,             ## 先读内存，不存在就读磁盘，并在内存中缓存磁盘结果
-	MEMORY_THEN_DISK_THEN_HTTP,   ## 先读内存，不存在再读磁盘，还不存在就发起http调用并将结果同时写入磁盘并缓存内存
-	HTTP_ONLY                     ## 直接从http获取数据，并同步到内存和磁盘
+#region Tier Chain Mappings
+## 读策略对应的 Tier 查找链映射表
+const _READ_CHAINS: Dictionary = {
+	ReadMode.CACHE_FIRST:  [Tier.MEMORY, Tier.DISK, Tier.REMOTE],
+	ReadMode.REMOTE_FIRST: [Tier.REMOTE, Tier.MEMORY, Tier.DISK],
+	ReadMode.LOCAL_ONLY:   [Tier.MEMORY, Tier.DISK],
+	ReadMode.REMOTE_ONLY:  [Tier.REMOTE],
+	ReadMode.MEMORY_ONLY:  [Tier.MEMORY],
 }
 
-enum WriteMode {
-	MEMORY_ONLY,                  ## 只写内存
-	MEMORY_AND_DISK,              ## 先写内存，并同时把新数据写入磁盘
-	MEMORY_AND_DISK_AND_HTTP,     ## 先写内存，把新数据写入磁盘，并通过http接口上传服务器
-	HTTP_FIRST                    ## 先通过http上传数据，成功后才去写入内存和磁盘
+## 写策略对应的 Tier 执行链映射表
+const _WRITE_CHAINS: Dictionary = {
+	WriteMode.LOCAL_FIRST:     [Tier.MEMORY, Tier.DISK, Tier.REMOTE],
+	WriteMode.LOCAL_ONLY:      [Tier.MEMORY, Tier.DISK],
+	WriteMode.REMOTE_FIRST:    [Tier.REMOTE, Tier.DISK, Tier.MEMORY],
+	WriteMode.MEMORY_ONLY:     [Tier.MEMORY],
 }
-
-## 走图片管线（Texture2D 读写）的磁盘文件扩展名（小写，不含点）
-const TEXTURE_EXTENSIONS: Array[String] = ["png", "jpg", "jpeg", "webp"]
 #endregion
 
-#region Exports & State
-var _cache: Dictionary = {}       # key -> Variant (Resource or Texture2D)
+#region State
+var _memory: MemoryDriver
+var _disk: DiskDriver
+var _remote: RemoteDriver
+
+## 已绑定的 StorageItem 配置项字典（key_id -> StorageItem）
+var _items: Dictionary = {}
 #endregion
 
-#region Public API
-## 从指定的数据项中读取数据（仅内存 / 磁盘，不涉及网络，故为同步方法）。[br]
-## [param item] 数据项配置;[br]
-## [param mode] 读取模式，仅支持 [enum ReadMode] 的 [code]MEMORY_ONLY[/code] 与 [code]MEMORY_THEN_DISK[/code]。[br]
-## 若需要 HTTP 回源，请改用 [method read_with_http]。[br]
-## 返回 [Variant]：读取到的数据（Resource 或 Texture2D），失败或不存在时返回 [code]null[/code]。
-func read(item: PersistItem, mode: ReadMode) -> Variant:
-	if item == null or item.key.is_empty():
-		App.log.error("PersistService", "Read failed: item or key is empty")
-		return null
-	match mode:
-		ReadMode.MEMORY_ONLY:
-			return _read_memory(item)
-		ReadMode.MEMORY_THEN_DISK:
-			var data: Variant = _read_memory(item)
-			if data != null:
-				return data
-			data = _read_disk(item)
-			if data != null:
-				_write_memory(item, data)
-				return data
-			return null
-	App.log.error("PersistService", "read() only supports MEMORY_ONLY / MEMORY_THEN_DISK; use read_with_http() for HTTP modes")
-	return null
+#region Lifecycle
+func _init() -> void:
+	_memory = MemoryDriver.new()
+	_disk = DiskDriver.new()
+	_remote = RemoteDriver.new()
 
-## 从指定的数据项中读取数据，支持在内存/磁盘缺失时通过 HTTP 回源（异步方法）。[br]
-## [param item] 数据项配置;[br]
-## [param mode] 读取模式，仅支持 [enum ReadMode] 的 [code]MEMORY_THEN_DISK_THEN_HTTP[/code] 与 [code]HTTP_ONLY[/code]。[br]
-## 若仅需内存/磁盘读取，请改用 [method read]。[br]
-## 该方法为异步。返回 [Variant]：读取到的数据（Resource 或 Texture2D），失败或不存在时返回 [code]null[/code]。
-func read_with_http(item: PersistItem, mode: ReadMode, pull_body: Dictionary = {}) -> Variant:
-	if item == null or item.key.is_empty():
-		App.log.error("PersistService", "Read failed: item or key is empty")
-		return null
-	match mode:
-		ReadMode.MEMORY_THEN_DISK_THEN_HTTP:
-			var data: Variant = _read_memory(item)
-			if data != null:
-				return data
-			data = _read_disk(item)
-			if data != null:
-				_write_memory(item, data)
-				return data
-			data = await _read_http(item, pull_body)
-			if data != null:
-				_write_memory(item, data)
-				_write_disk(item, data)
-				return data
-			return null
-		ReadMode.HTTP_ONLY:
-			var data: Variant = await _read_http(item, pull_body)
-			if data != null:
-				_write_memory(item, data)
-				_write_disk(item, data)
-				return data
-			return null
-	App.log.error("PersistService", "read_with_http() only supports MEMORY_THEN_DISK_THEN_HTTP / HTTP_ONLY; use read() for non-HTTP modes")
-	return null
 
-## 将数据写入指定的数据项（仅内存 / 磁盘，不涉及网络，故为同步方法）。[br]
-## [param item] 数据项配置;[br]
-## [param mode] 写入模式，仅支持 [enum WriteMode] 的 [code]MEMORY_ONLY[/code] 与 [code]MEMORY_AND_DISK[/code];[br]
-## [param data] 待写入的数据（Resource 或 Texture2D）。[br]
-## 若需要上传服务端，请改用 [method write_with_http]。[br]
-## 返回 [Result]：成功时 [member Result.value] 为空，失败时返回详细错误。
-func write(item: PersistItem, mode: WriteMode, data: Variant) -> Result:
-	if item == null or item.key.is_empty():
-		return Result.err("Write failed: item or key is empty")
-	if data == null:
-		return Result.err("Write failed: data is null")
-	match mode:
-		WriteMode.MEMORY_ONLY:
-			_write_memory(item, data)
-			return Result.ok()
-		WriteMode.MEMORY_AND_DISK:
-			_write_memory(item, data)
-			var disk_res := _write_disk(item, data)
-			if disk_res.is_err():
-				return disk_res
-			return Result.ok()
-	return Result.err("write() only supports MEMORY_ONLY / MEMORY_AND_DISK; use write_with_http() for HTTP modes")
+## 释放指定 key 占用的内存缓存槽。空字符串或不在缓存中为安全空操作。
+func release(key_id: String) -> void:
+	if not key_id.is_empty() and _memory:
+		_memory.release(key_id)
 
-## 将数据写入指定的数据项，并通过 HTTP 上传服务端（异步方法）。[br]
-## [param item] 数据项配置;[br]
-## [param mode] 写入模式，仅支持 [enum WriteMode] 的 [code]MEMORY_AND_DISK_AND_HTTP[/code] 与 [code]HTTP_FIRST[/code];[br]
-## [param data] 待写入的数据（Resource 或 Texture2D）。[br]
-## 若仅需内存/磁盘写入，请改用 [method write]。[br]
-## 该方法为异步。返回 [Result]：成功时 [member Result.value] 为上传响应值，失败时返回详细错误。
-func write_with_http(item: PersistItem, mode: WriteMode, data: Variant) -> Result:
-	if item == null or item.key.is_empty():
-		return Result.err("Write failed: item or key is empty")
-	if data == null:
-		return Result.err("Write failed: data is null")
-	match mode:
-		WriteMode.MEMORY_AND_DISK_AND_HTTP:
-			_write_memory(item, data)
-			var disk_res := _write_disk(item, data)
-			if disk_res.is_err():
-				return disk_res
-			var http_res: Result = await _write_http(item, data)
-			if http_res.is_err():
-				return http_res
-			return Result.ok(http_res.value)
-		WriteMode.HTTP_FIRST:
-			var http_res: Result = await _write_http(item, data)
-			if http_res.is_err():
-				return http_res
-			_write_memory(item, data)
-			var disk_res := _write_disk(item, data)
-			if disk_res.is_err():
-				return disk_res
-			return Result.ok(http_res.value)
-	return Result.err("write_with_http() only supports MEMORY_AND_DISK_AND_HTTP / HTTP_FIRST; use write() for non-HTTP modes")
+
+## 清空服务占用的所有内存缓存与绑定项（供游戏退出或特定清理时调用）
+func clear() -> void:
+	if _memory:
+		_memory.clear()
+	_items.clear()
 #endregion
 
-#region Internal
-func _read_memory(item: PersistItem) -> Variant:
-	return _cache.get(item.key, null)
+#region Item Binding
+## 绑定一个 StorageItem 资源配置项
+func bind(item: StorageItem) -> void:
+	if not item or item.key_id.is_empty():
+		App.log.error("PersistService", "Cannot bind invalid or empty key_id StorageItem.")
+		return
+	_items[item.key_id] = item
+#endregion
 
-func _write_memory(item: PersistItem, data: Variant) -> void:
-	_cache[item.key] = data
+#region Public API - Async Read / Write / Delete / Has
+## 异步读取数据。[br]
+## 必须 [code]await[/code] 调用；支持传入 [StorageItem] 或唯一 key_id；根据策略依次穿透各介质层，命中后自动回灌本地缓存。
+func read_async(target: Variant, policy: int = ReadMode.CACHE_FIRST) -> Result:
+	var item: StorageItem = _resolve_item(target)
+	if not item:
+		return Result.err("StorageItem not bound: '%s'" % str(target))
 
-func _read_disk(item: PersistItem) -> Variant:
-	var disk_path: String = item.path		
-	if disk_path.is_empty() or (not FileAccess.file_exists(disk_path)):
-		# 如果path(user)目录下不存在，使用backup_path(res)兜底
-		disk_path = item.backup_path
-	if disk_path.is_empty() or (not FileAccess.file_exists(disk_path)):
-		return null
-		
-	if _is_texture_pipeline(item):
-		return load_texture_from_path(disk_path)
-	else:
-		if disk_path.ends_with(".tres"):
-			var res := ResourceLoader.load(disk_path)
-			if res:
-				return res
-		elif disk_path.ends_with(".json"):
-			var json_res := FileUtils.read_json(disk_path)
-			if json_res.is_ok() and json_res.value is Dictionary:
-				var res := ResourceJsonUtil.dict_to_resource(json_res.value, item.script_path_dict)
-				if res:
-					return res
-	return null
+	var chain: Array = _READ_CHAINS.get(policy, _READ_CHAINS[ReadMode.CACHE_FIRST])
+	var hit_tier: int = -1
+	var result_data: Variant = null
+	var last_error: String = "No data found across configured tiers"
 
-func _write_disk(item: PersistItem, data: Variant) -> Result:
-	if item.path.is_empty():
-		return Result.err("Disk write failed: path is empty")
-	var dir_res := FileUtils.ensure_dir_exists(item.path.get_base_dir())
-	if dir_res.is_err():
-		return Result.err("Disk write failed: failed to create directory: %s" % dir_res.error)
-	if _is_texture_pipeline(item):
-		var texture := data as Texture2D
-		if not texture:
-			return Result.err("Disk write failed: data is not a Texture2D")
-		var img := texture.get_image()
-		if not img or img.is_empty():
-			return Result.err("Disk write failed: failed to get image from texture")
-		var ext := item.path.get_extension().to_lower()
-		var err := _save_image_to_path(img, item.path, ext)
-		if err != OK:
-			return Result.err("Disk write failed: save %s failed (err=%d)" % [ext, err])
-	else:
-		var resource := data as Resource
-		if not resource:
-			return Result.err("Disk write failed: data is not a Resource")
-		var err := ResourceSaver.save(resource, item.path)
-		if err != OK:
-			return Result.err("Disk write failed: ResourceSaver.save failed (err=%d)" % err)
+	# 1. 瀑布穿透：按 Tier 执行链顺序依次读取
+	for tier: Tier in chain:
+		var result: Result = await _read_tier(tier, item)
+		if result.is_ok():
+			result_data = result.value
+			hit_tier = tier
+			break
+		else:
+			last_error = str(result.error)
+
+	if hit_tier == -1 or result_data == null:
+		return Result.err(last_error)
+
+	# 2. 缓存回灌：命中底层数据时，自动顺势写回错过的上层本地缓存
+	_backfill_cache(item, result_data, chain, hit_tier)
+
+	return Result.ok(result_data)
+
+
+## 异步写入数据。[br]
+## 必须 [code]await[/code] 调用；根据策略将数据写入各级存储介质。
+func write_async(target: Variant, data: Variant, policy: int = WriteMode.LOCAL_FIRST) -> Result:
+	var item: StorageItem = _resolve_item(target)
+	if not item:
+		return Result.err("StorageItem not bound: '%s'" % str(target))
+
+	var chain: Array = _WRITE_CHAINS.get(policy, _WRITE_CHAINS[WriteMode.LOCAL_FIRST])
+
+	# 按写入链顺序依次写入各层
+	for tier: Tier in chain:
+		var result: Result = await _write_tier(tier, item, data, policy)
+		if result.is_err():
+			App.log.warn("PersistService", "Failed to write to Tier[%s]: %s" % [Tier.keys()[tier], str(result.error)])
+			# 针对 REMOTE_FIRST 策略，远端首发失败立即阻断返回
+			if policy == WriteMode.REMOTE_FIRST and tier == Tier.REMOTE:
+				return result
+			if policy != WriteMode.LOCAL_FIRST:
+				return result
+
 	return Result.ok()
 
-func _read_http(item: PersistItem, pull_body: Dictionary = {}) -> Variant:
-	if item.pull_url.is_empty():
-		App.log.warn("PersistService", "HTTP read skipped: pull_url is empty")
-		return null
-	if not App.net:
-		App.log.error("PersistService", "HTTP read failed: NetworkService is not initialized")
-		return null
-	if _is_texture_pipeline(item):
-		var dl_res: Result = await App.net.download_file(item.pull_url, item.path)
-		if dl_res.is_err():
-			App.log.error("PersistService", "HTTP read failed: download_file failed: %s" % dl_res.error)
-			return null
-		return _read_disk(item)
-	else:
-		var res: Result
-		print("item.pull_url", item.pull_url)
-		if item.pull_method.to_upper() == "POST":
-			res = await App.net.post_request(item.pull_url, pull_body)
-		else:
-			res = await App.net.get_request(item.pull_url, pull_body)
-		if res.is_err():
-			App.log.error("PersistService", "HTTP read failed: pull request failed: %s" % res.error)
-			return null
-		if res.value is Dictionary:
-			if res.value.has("data"):
-				return ResourceJsonUtil.dict_to_resource(res.value["data"], item.script_path_dict, "")
+
+## 异步删除本地数据（清理内存池与磁盘文件）。[br]
+## 必须 [code]await[/code] 调用。
+func delete_async(target: Variant) -> Result:
+	var item: StorageItem = _resolve_item(target)
+	if not item:
+		return Result.err("StorageItem not bound: '%s'" % str(target))
+
+	# 默认只清理本地介质，防误删远端资产
+	if not item.key_id.is_empty():
+		_memory.delete(item.key_id)
+
+	if not item.disk_path.is_empty():
+		_disk.delete(StringName(item.disk_path))
+
+	return Result.ok()
+
+
+## 检查指定数据是否存在（优先检查内存，其次检查本地磁盘）。[br]
+## 同步查询，不阻塞主线程。
+func has(target: Variant) -> Result:
+	var item: StorageItem = _resolve_item(target)
+	if not item:
+		return Result.ok(false)
+
+	if not item.key_id.is_empty():
+		var mem_result := _memory.has(item.key_id)
+		if mem_result.is_ok() and mem_result.value == true:
+			return Result.ok(true)
+
+	if not item.disk_path.is_empty():
+		var disk_result := _disk.has(StringName(item.disk_path))
+		if disk_result.is_ok() and disk_result.value == true:
+			return Result.ok(true)
+
+	return Result.ok(false)
+#endregion
+
+#region Private Helpers
+## 统一将传入的 StringName、String 或 StorageItem 解析为绑定的有效实例
+func _resolve_item(target: Variant) -> StorageItem:
+	if target is StorageItem:
+		return target as StorageItem
+	if target is StringName or target is String:
+		return _items.get(StringName(target), null)
+	return null
+
+
+## 路由读取请求到对应驱动层
+func _read_tier(tier: Tier, item: StorageItem) -> Result:
+	match tier:
+		Tier.MEMORY:
+			if item.key_id.is_empty():
+				return Result.err("Memory read skipped: empty key_id")
+			return _memory.read(item.key_id, {"memory_ttl": item.memory_ttl})
+
+		Tier.DISK:
+			if item.disk_path.is_empty():
+				return Result.err("Disk read skipped: empty disk_path")
+			return _disk.read(StringName(item.disk_path), {"payload_type": item.payload_type})
+
+		Tier.REMOTE:
+			if item.remote_url.is_empty():
+				return Result.err("Remote read skipped: empty remote_url")
+			var remote_kwargs := {
+				"payload_type": item.payload_type,
+				"method": item.method,
+				"save_path": item.disk_path,
+			}
+			return await _remote.read_async(StringName(item.remote_url), remote_kwargs)
+
+	return Result.err("Unknown Tier: %s" % str(tier))
+
+
+## 路由写入请求到对应驱动层
+func _write_tier(tier: Tier, item: StorageItem, data: Variant, policy: int) -> Result:
+	match tier:
+		Tier.MEMORY:
+			if item.key_id.is_empty():
+				return Result.ok()
+			return _memory.write(item.key_id, data, {"memory_ttl": item.memory_ttl})
+
+		Tier.DISK:
+			if item.disk_path.is_empty():
+				return Result.ok()
+			return _disk.write(StringName(item.disk_path), data, {"payload_type": item.payload_type})
+
+		Tier.REMOTE:
+			if item.remote_url.is_empty():
+				return Result.ok()
+			var remote_kwargs := {
+				"payload_type": item.payload_type,
+				"method": item.method,
+			}
+			# 针对 LOCAL_FIRST 策略，远端推送支持异步非阻塞触发 (Fire-and-Forget)
+			if policy == WriteMode.LOCAL_FIRST:
+				_remote.write_async(StringName(item.remote_url), data, remote_kwargs)
+				return Result.ok()
 			else:
-				return ResourceJsonUtil.dict_to_resource(res.value, item.script_path_dict, "")
-		else:
-			App.log.error("PersistService", "HTTP read failed: response is not a Dictionary")
-			return null
+				return await _remote.write_async(StringName(item.remote_url), data, remote_kwargs)
 
-func _write_http(item: PersistItem, data: Variant) -> Result:
-	if item.push_url.is_empty():
-		return Result.ok()
-	if not App.net:
-		return Result.err("HTTP write failed: NetworkService is not initialized")
-	if _is_texture_pipeline(item):
-		var texture := data as Texture2D
-		if not texture:
-			return Result.err("HTTP write failed: data is not a Texture2D")
-		var img := texture.get_image()
-		if not img or img.is_empty():
-			return Result.err("HTTP write failed: failed to get image from texture")
-		var ext := item.path.get_extension().to_lower()
-		var bytes := _encode_image_to_buffer(img, ext)
-		if bytes.is_empty():
-			return Result.err("HTTP write failed: failed to encode texture to %s bytes" % ext)
-		var filename: String = item.path.get_file()
-		if filename.is_empty():
-			filename = "image.%s" % (ext if not ext.is_empty() else "png")
-		var upload_res: Result = await App.net.upload_file(
-			item.push_url,
-			"file",
-			bytes,
-			filename,
-			_texture_mime_type(ext)
-		)
-		return upload_res
-	else:
-		var resource := data as Resource
-		if not resource:
-			return Result.err("HTTP write failed: data is not a Resource")
-		var dict := ResourceJsonUtil.resource_to_dict(resource)
-		if resource.get_script():
-			dict["_script_path"] = resource.get_script().resource_path
-		var res: Result
-		if item.push_method.to_upper() == "GET":
-			res = await App.net.get_request(item.push_url, dict)
-		else:
-			res = await App.net.post_request(item.push_url, dict)
-		return res
+	return Result.err("Unknown Tier: %s" % str(tier))
 
-func _is_texture_pipeline(item: PersistItem) -> bool:
-	return item.path.get_extension().to_lower() in TEXTURE_EXTENSIONS
 
-## 从路径加载纹理：res:// 走 ResourceLoader（导出可用），user:// 等走 Image 解码。
-static func load_texture_from_path(path: String) -> Texture2D:
-	if path.is_empty():
-		return null
-	if path.begins_with("res://"):
-		var res := ResourceLoader.load(path)
-		return res as Texture2D if res is Texture2D else null
-	var img := Image.load_from_file(path)
-	if img == null or img.is_empty():
-		return null
-	return ImageTexture.create_from_image(img)
+## 缓存回灌：把命中层读到的数据，写入本条读链上排在它前面、穿透失败的本地层。[br]
+## [param chain] 与本次 [method read_async] 相同的 Tier 查找链；[param hit_tier] 为实际命中层。[br]
+## 只回灌 [code]Tier.MEMORY[/code] / [code]Tier.DISK[/code]：读路径绝不向远端回写。[br]
+## [code]key_id[/code] 或 [code]disk_path[/code] 为空时跳过对应层；[code]payload_type == "FILE"[/code] 时不把文件流序列化进磁盘 JSON。[br]
+## 回灌写入失败会被忽略，不影响本次读取已返回的成功结果。
+func _backfill_cache(item: StorageItem, data: Variant, chain: Array, hit_tier: int) -> void:
+	for tier: Tier in chain:
+		if tier == hit_tier:
+			break # 命中层及之后不再处理；前面的才是需要补齐的本地缓存
 
-## 按扩展名把图片写入磁盘，返回 Godot 错误码
-func _save_image_to_path(img: Image, path: String, ext: String) -> int:
-	match ext:
-		"jpg", "jpeg":
-			return img.save_jpg(path)
-		"webp":
-			return img.save_webp(path)
-		_:
-			return img.save_png(path)
-
-## 按扩展名把图片编码为字节缓冲，用于上传
-func _encode_image_to_buffer(img: Image, ext: String) -> PackedByteArray:
-	match ext:
-		"jpg", "jpeg":
-			return img.save_jpg_to_buffer()
-		"webp":
-			return img.save_webp_to_buffer()
-		_:
-			return img.save_png_to_buffer()
-
-## 按扩展名返回上传用的 MIME 类型
-func _texture_mime_type(ext: String) -> String:
-	match ext:
-		"jpg", "jpeg":
-			return "image/jpeg"
-		"webp":
-			return "image/webp"
-		_:
-			return "image/png"
+		# Remote 即使排在链前（如 REMOTE_FIRST）也无对应分支，读时不会推云端
+		if tier == Tier.MEMORY:
+			if not item.key_id.is_empty():
+				_memory.write(item.key_id, data, {"memory_ttl": item.memory_ttl})
+		elif tier == Tier.DISK:
+			if not item.disk_path.is_empty() and item.payload_type != "FILE":
+				_disk.write(StringName(item.disk_path), data, {"payload_type": item.payload_type})
 #endregion

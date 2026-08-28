@@ -1,50 +1,80 @@
 class_name BootPipeline
 extends RefCounted
 
-## 启动管线调度器:按序执行 [BootStage] 列表,委托 [StageRunner] 处理单步。
-##
-## [code]Bootstrap[/code] 在 [code]_ready[/code] 里 [code]new(self, default_stages())[/code]
-## 并 [code]await run()[/code]。新增阶段:实现 [BootStage] 子类并插入 [method default_stages]。
+## 按序执行 [BootStage]。失败按阶段声明的策略决定是否继续。
 
-#region Exports & State
-var _ctx: BootContext                           ## 本次 run 的共享上下文,构造时绑定 [param p_host]
-var _stages: Array[BootStage] = []              ## 待执行阶段(顺序即依赖顺序),构造时注入
-var _runner: StageRunner = StageRunner.new()    ## 无状态执行器,负责单阶段计时/日志/失败策略
-#endregion
+var _stages: Array[BootStage] = []
 
-#region Lifecycle
-func _init(p_host: Node, p_stages: Array[BootStage]) -> void:
+
+func _init(p_stages: Array[BootStage]) -> void:
 	_stages = p_stages
-	_ctx = BootContext.new(p_host)
-	_ctx.total_stages = _stages.size()
-#endregion
 
-#region Public API
-## 返回项目默认启动阶段列表;修改此表即调整启动顺序与内容。
+
+## 默认启动阶段。跳过某阶段 = 不要放进这个列表。
 static func app_launch_stages() -> Array[BootStage]:
 	return [
-		CoreServiceStage.new(),    # 核心服务启动
-		CoreAssetStage.new(),      # 核心资源预加载
+		CoreServiceStage.new(),
 	]
 
-## 顺序调度 [member _stages]。该方法为异步。
-## [method BootStage.should_run] 为 false 时跳过;[member StageRunOutcome.should_continue]
-## 为 false 时提前结束(致命/重试失败),不再执行后续 Stage。
-func run() -> void:
-	for i in _stages.size():
+
+## 顺序 await 各阶段。支持可选进度回调 [param on_progress]（签名 [code]func(value: float)[/code]，0.0 ~ 100.0）。
+## 成功返回 [method Result.ok]，STOP 失败则返回 [method Result.err]。
+func run(on_progress: Callable = Callable()) -> Result:
+	var total := _stages.size()
+	if total == 0:
+		_report(on_progress, 100.0)
+		return Result.ok()
+
+	# 1. 汇总所有阶段的总权重
+	var total_weight := 0.0
+	for stage in _stages:
+		total_weight += maxf(stage.weight(), 0.01)
+
+	# 2. 依次执行各阶段并按权重分配全局进度区间
+	var current_accumulated_weight := 0.0
+	for i in total:
 		var stage: BootStage = _stages[i]
-		_ctx.current_index = i
-		if not stage.should_run(_ctx):
-			_log_skip(stage)
+		var stage_weight := maxf(stage.weight(), 0.01)
+		var start_pct := (current_accumulated_weight / total_weight) * 100.0
+		var end_pct := ((current_accumulated_weight + stage_weight) / total_weight) * 100.0
+
+		# 构造当前阶段的细粒度子进度映射闭包（0.0 ~ 1.0 -> start_pct ~ end_pct）
+		var sub_reporter := func(ratio: float) -> void:
+			var mapped_pct := lerpf(start_pct, end_pct, clampf(ratio, 0.0, 1.0))
+			_report(on_progress, mapped_pct)
+
+		_report(on_progress, start_pct)
+
+		var started_ms := Time.get_ticks_msec()
+		stage.info("Start (%d/%d, weight=%.1f)" % [i + 1, total, stage_weight])
+
+		var result: Result = await stage.run(sub_reporter)
+		var elapsed_ms := Time.get_ticks_msec() - started_ms
+		if result.is_ok():
+			stage.info("Done (%dms)" % elapsed_ms)
+			_report(on_progress, end_pct)
+			current_accumulated_weight += stage_weight
 			continue
 
-		var outcome: StageRunOutcome = await _runner.run_stage(stage, _ctx)
-		if not outcome.should_continue:
-			return
-#endregion
+		if not _on_failure(stage, result, elapsed_ms):
+			return result
 
-#region Internal
-func _log_skip(stage: BootStage) -> void:
-	if App.log:
-		App.log.info(BootStage.LOG_TAG, "stage skipped: %s" % stage.get_name())
-#endregion
+		current_accumulated_weight += stage_weight
+
+	_report(on_progress, 100.0)
+	return Result.ok()
+
+
+## 返回 true = 管线继续；false = 终止。
+func _on_failure(stage: BootStage, result: Result, elapsed_ms: int) -> bool:
+	var msg := "Failed (%dms) — %s" % [elapsed_ms, result.error]
+	if stage.on_fail() == BootStage.Failure.CONTINUE:
+		stage.warn(msg)
+		return true
+	stage.error(msg)
+	return false
+
+
+static func _report(on_progress: Callable, value: float) -> void:
+	if on_progress.is_valid():
+		on_progress.call(value)

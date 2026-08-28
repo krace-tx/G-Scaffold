@@ -3,46 +3,46 @@ extends RefCounted
 
 ## 权威时间源。
 ##
-## 所有每日重置、广告冷却、活动倒计时必须用 [method now],**禁止直接读系统时钟**
-## ——玩家改设备时间是移动端第一大作弊手段。见 docs/architecture/boot-sequence.md。
-##
-## 已校时(M4 登录握手拿到服务器时间后):基于服务器时间 + 本地单调 tick 推进,
-## 玩家改系统时钟无效。未校时:退化为系统时钟且 [method is_trusted] 返回 false,
-## 业务应据此拒绝执行敏感的时间相关逻辑。
+## 每日重置、广告冷却、活动倒计时用 [method now]，不要读系统时钟（改设备时间是常见作弊）。
+## 已校时：服务器时间 + 本地单调 tick。未校时：退化为系统时钟，[method is_trusted] 为 false。
+## 业务层自己取服务器 unix 毫秒，再交给 [method sync]。
 
-#region Exports & State
-var _synced: bool = false
-var _sync_server_msec: int = 0   ## 校时那一刻的服务器 unix 毫秒
-var _sync_tick_msec: int = 0     ## 校时那一刻的本地 Time.get_ticks_msec()
+#region Constants & Enums
+const _MS_PER_SECOND: int = 1000
 #endregion
 
-
-func _init() -> void:
-	sync_from_server()
-
+#region State
+var _synced: bool = false
+var _sync_server_msec: int = 0
+var _sync_tick_msec: int = 0
+#endregion
 
 #region Public API
-## 当前 unix 时间(秒)。已校时→服务器时间+本地tick推进;未校时→系统时钟(不可信)。
+## 当前 unix 时间（秒）。未校时时来自系统时钟，不可信。
 func now() -> int:
-	@warning_ignore("integer_division")   # 有意:毫秒→秒取整
-	return now_msec() / 1000
+	@warning_ignore("integer_division")
+	return now_msec() / _MS_PER_SECOND
 
 
-## 当前 unix 时间(毫秒)。
+## 当前 unix 时间（毫秒）。
 func now_msec() -> int:
-	if _synced:
-		return _sync_server_msec + (Time.get_ticks_msec() - _sync_tick_msec)
-	return int(Time.get_unix_time_from_system() * 1000.0)
+	if not _synced:
+		return int(Time.get_unix_time_from_system() * _MS_PER_SECOND)
+	# ticks 从引擎启动起单调递增，改系统时钟不会让它回跳。
+	return _sync_server_msec + (Time.get_ticks_msec() - _sync_tick_msec)
 
 
-## 用服务器时间校准(M4 登录握手成功后调用)。[param server_unix_msec] 为服务器 unix 毫秒。
-## 校准后 [method now] 即基于服务器时间推进,与本地系统时钟解耦。
-func sync_from_server() -> void:
-	# TODO: 实现时间校准
-	pass
+## 用服务器 unix 毫秒校时。之后 [method now] 与设备时钟解耦。
+func sync(server_unix_msec: int) -> Result:
+	if server_unix_msec <= 0:
+		return Result.err("Sync failed: server time is invalid.")
+	_sync_server_msec = server_unix_msec
+	_sync_tick_msec = Time.get_ticks_msec()
+	_synced = true
+	return Result.ok()
 
 
-## 是否已用服务器时间校准。false 时 [method now] 的返回值来自系统时钟,不可信。
+## 是否已校时。false 时 [method now] 来自系统时钟，不可信。
 func is_trusted() -> bool:
 	return _synced
 #endregion

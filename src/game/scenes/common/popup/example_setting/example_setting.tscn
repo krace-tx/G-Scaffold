@@ -1,0 +1,97 @@
+[gd_scene format=3 uid="uid://dgscaffoldset01"]
+
+[ext_resource type="Script" path="res://src/game/scenes/common/popup/example_setting/example_setting.gd" id="1_root"]
+
+[node name="ExampleSetting" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_root")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Panel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(480, 320)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -160.0
+offset_right = 240.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Settings"
+
+[node name="CloseBtn" type="Button" parent="Panel/VBox/Header"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+text = "✕"
+
+[node name="HSeparator" type="HSeparator" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Options" type="VBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MusicRow" type="HBoxContainer" parent="Panel/VBox/Options"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBox/Options/MusicRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🎵 Background Music"
+
+[node name="MusicCheck" type="CheckBox" parent="Panel/VBox/Options/MusicRow"]
+layout_mode = 2
+button_pressed = true
+
+[node name="SfxRow" type="HBoxContainer" parent="Panel/VBox/Options"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBox/Options/SfxRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🔊 Sound Effects"
+
+[node name="SfxCheck" type="CheckBox" parent="Panel/VBox/Options/SfxRow"]
+layout_mode = 2
+button_pressed = true
+
+[node name="VibrateRow" type="HBoxContainer" parent="Panel/VBox/Options"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBox/Options/VibrateRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "📳 Haptic Vibration"
+
+[node name="VibrateCheck" type="CheckBox" parent="Panel/VBox/Options/VibrateRow"]
+layout_mode = 2
+button_pressed = true
